@@ -19,22 +19,46 @@ class UserModel
     {
         // --- GUARDAR EN JSON ---
         $users = json_decode(file_get_contents($this->jsonFile), true);
+        $record = [];
 
-        $data['id'] = uniqid();
-        $data['created_at'] = date('Y-m-d H:i:s');
+        $record['id'] = uniqid();
+        $record['name'] = isset($data['full_name']) ? $data['full_name'] : ($data['name'] ?? '');
+        $record['email'] = $data['email'] ?? '';
+        $record['phone'] = $data['phone'] ?? '';
+        $record['type'] = $data['type'] ?? '';
+        $record['department'] = $data['department'] ?? '';
+        $record['position'] = $data['position'] ?? '';
+        $record['hired_at'] = $data['hired_at'] ?? '';
+        $record['status'] = $data['status'] ?? '';
+        $record['created_at'] = date('Y-m-d H:i:s');
 
-        $users[] = $data;
+        $users[] = $record;
 
         file_put_contents($this->jsonFile, json_encode($users, JSON_PRETTY_PRINT));
 
-        // --- GUARDAR EN MYSQL ---
-        $db = Database::connect();
+        // Intentar guardar en MySQL si la tabla existe, pero no romper si hay error
+        try {
+            $db = Database::connect();
 
-        $sql = "INSERT INTO users (id, name, email, password, created_at)
-                VALUES (:id, :name, :email, :password, :created_at)";
+            $sql = "INSERT INTO users (id, name, email, phone, type, department, position, hired_at, status, created_at)
+                    VALUES (:id, :name, :email, :phone, :type, :department, :position, :hired_at, :status, :created_at)";
 
-        $stmt = $db->prepare($sql);
-        $stmt->execute($data);
+            $stmt = $db->prepare($sql);
+            $stmt->execute([
+                ':id' => $record['id'],
+                ':name' => $record['name'],
+                ':email' => $record['email'],
+                ':phone' => $record['phone'],
+                ':type' => $record['type'],
+                ':department' => $record['department'],
+                ':position' => $record['position'],
+                ':hired_at' => $record['hired_at'],
+                ':status' => $record['status'],
+                ':created_at' => $record['created_at']
+            ]);
+        } catch (Exception $e) {
+            // registrar error en auditoría o ignorar para no romper flujo
+        }
     }
 
     public function findByEmail($email)

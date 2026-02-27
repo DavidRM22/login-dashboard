@@ -17,7 +17,7 @@
             <a class="employee-modal__close" href="<?= route('dashboard', 'index') ?>" aria-label="Cerrar">×</a>
         </div>
 
-        <form class="employee-form" method="get" action="<?= route('dashboard', 'index') ?>">
+        <form class="employee-form" method="post" action="<?= route('dashboard', 'saveEmployee') ?>">
             <h2>Información del Usuario</h2>
             <div class="employee-grid employee-grid--two">
                 <div class="field">
