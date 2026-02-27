@@ -1,0 +1,128 @@
+[
+    {
+        "name": "Test",
+        "email": "test@test.com",
+        "password": "123456",
+        "id": "6995e4fe51afa",
+        "created_at": "2026-02-18 11:12:46"
+    },
+    {
+        "name": "Test",
+        "email": "test@test.com",
+        "password": "123456",
+        "id": "6995e699c579a",
+        "created_at": "2026-02-18 11:19:37"
+    },
+    {
+        "name": "Test",
+        "email": "test@test.com",
+        "password": "123456",
+        "id": "6995e69bc662e",
+        "created_at": "2026-02-18 11:19:39"
+    },
+    {
+        "name": "Test",
+        "email": "test@test.com",
+        "password": "123456",
+        "id": "6995e69c4d7a0",
+        "created_at": "2026-02-18 11:19:40"
+    },
+    {
+        "name": "david",
+        "email": "askdjs@gmail.com",
+        "password": "$2y$10$sxPUgOoip14etCu6czPTT.OuWqHJRwDnRc8nntzsGKljHaSDJWZ6i",
+        "id": "6995e844c750f",
+        "created_at": "2026-02-18 11:26:44"
+    },
+    {
+        "name": "david",
+        "email": "a11skdjs@gmail.com",
+        "password": "$2y$10$8Ss9uJWWqEYJOO0CDHw.oOtL1O3CGKGvWHPi1uJCh3TvOQF66vdQ2",
+        "id": "6995e97fae21c",
+        "created_at": "2026-02-18 11:31:59"
+    },
+    {
+        "name": "david",
+        "email": "a22skdjs@gmail.com",
+        "password": "$2y$10$QrDaMo6s2oiIKRmuMBA\/weugGnnis0nBNL8VlAugvxvvEc2ep4BLW",
+        "id": "6995e9c933957",
+        "created_at": "2026-02-18 11:33:13"
+    },
+    {
+        "name": "luis",
+        "email": "luis@gmail.com",
+        "password": "$2y$10$KjRVjPirc8MC6lzzqtC4ue6EnBOc0.IWiIiwX9rRAtUa\/KeVj2C2a",
+        "id": "6995ed6e9adbe",
+        "created_at": "2026-02-18 11:48:46"
+    },
+    {
+        "name": "jenan",
+        "email": "gomezsanjean@gmail.com",
+        "password": "$2y$10$2MT5.g6eqMgoKDAB9I6cIOJqkX1aoD0tlnQhgUr2DowaR5Iy3.CXm",
+        "id": "6995f7e1b2cc6",
+        "created_at": "2026-02-18 12:33:21"
+    },
+    {
+        "name": "jkhsderjh",
+        "email": "uerierh@gmail.com",
+        "password": "$2y$10$4sRh10Q2gCUMimWL2fKnfeav52nHh3uQQvMnE7h5CfWiY\/ol\/9rc2",
+        "id": "6995f9b7d2311",
+        "created_at": "2026-02-18 12:41:11"
+    },
+    {
+        "name": "juan",
+        "email": "juan@gmail.com",
+        "password": "$2y$10$\/l9mJyLjUTHZdncMLV1Gt.do2utWhlt5EGvKzeZcow792bXT\/ne12",
+        "id": "699e43df7c058",
+        "created_at": "2026-02-24 19:35:43"
+    },
+    {
+        "name": "jhoan",
+        "email": "jhoan@gmail.com",
+        "password": "$2y$10$dGD4faheP1eKXalLYpoM3uo.1GiXNhYkJcUjIBj\/kHIucUneFmWkG",
+        "id": "699e4e2ae3b62",
+        "created_at": "2026-02-24 20:19:38"
+    },
+    {
+        "name": "lenin",
+        "email": "lenin@gmail.com",
+        "password": "$2y$10$d9PBIJLv1k8ONj8\/ZW.Z0ezLeyQl4qNTPOLs8I.xB0VlN.B1mmtB6",
+        "id": "699e4ebddb4b4",
+        "created_at": "2026-02-24 20:22:05"
+    },
+    {
+        "name": "jhe",
+        "email": "jhe@gmail.com",
+        "password": "$2y$10$3R0zNoATGniQcGk8V26nxeCZOjTRdgfBToTpFrv9DdzW.8lgX0Cya",
+        "id": "699e52a366f88",
+        "created_at": "2026-02-24 20:38:43"
+    },
+    {
+        "name": "jhe",
+        "email": "jhe@gmail.com",
+        "password": "$2y$10$T770rNdC1WpUD69gS4nh2egmLMP1b1GOj812Vbw6OhMgwVk\/hMBiu",
+        "id": "699e52a5ab529",
+        "created_at": "2026-02-24 20:38:45"
+    },
+    {
+        "name": "juan12",
+        "email": "juan12@gmail.com",
+        "password": "$2y$10$TM8xIeJ29KQciUjsP7OwE.7sodK6Vvr5v8NFBodaV0sH2vLlYUk8i",
+        "id": "699e5a4003d9e",
+        "created_at": "2026-02-24 21:11:12"
+    },
+    {
+        "name": "david",
+        "email": "ramirezmelgardavid@gmail.com",
+        "password": "$2y$10$NSm8nbnHhsrWVUcrS3VusOtmvwnLNaVyrJPoTrYXjDaZ7NEVWvHee",
+        "id": "699e5da2be2a9",
+        "created_at": "2026-02-24 21:25:38"
+    },
+    {
+        "name": "gheta",
+        "email": "gheta123@hotmail.com",
+        "password": "$2y$10$ZyiYgToRJ2yfUi1tXhy5Fe8lKHzwiBF2LMW05txdWT5t05JOglpDq",
+        "id": "699eff3e8418d",
+        "created_at": "2026-02-25 08:55:10"
+    }
+]

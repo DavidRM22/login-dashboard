@@ -1,0 +1,530 @@
+[
+    {
+        "event": "EVENT_REGISTER",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 11:48:46",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_OTP_SENT",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 11:48:46",
+        "details": "OTP generado"
+    },
+    {
+        "event": "EVENT_FAILED_OTP",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 11:50:44",
+        "details": "C\u00f3digo incorrecto o expirado"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 11:57:56",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:00:26",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_FAILED_OTP",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:01:31",
+        "details": "C\u00f3digo incorrecto o expirado"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:05:08",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:05:59",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:06:07",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:19:37",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "luis@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:19:54",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_REGISTER",
+        "email": "gomezsanjean@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:33:21",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_OTP_SENT",
+        "email": "gomezsanjean@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:33:21",
+        "details": "OTP generado"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "gomezsanjean@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:33:38",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_REGISTER",
+        "email": "uerierh@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:41:11",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_OTP_SENT",
+        "email": "uerierh@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:41:11",
+        "details": "OTP generado"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "uerierh@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-18 12:41:22",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_REGISTER",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 19:35:43",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_OTP_SENT",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 19:35:43",
+        "details": "OTP generado"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 19:35:49",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 19:36:01",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 19:36:17",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 19:36:40",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 19:52:52",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:04:06",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:04:13",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:18:58",
+        "details": "Credenciales v\u00e1lidas, OTP enviado"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:19:20",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_REGISTER",
+        "email": "jhoan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:19:38",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_OTP_SENT",
+        "email": "jhoan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:19:38",
+        "details": "OTP generado"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "jhoan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:19:46",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_REGISTER",
+        "email": "lenin@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:22:05",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_OTP_SENT",
+        "email": "lenin@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:22:05",
+        "details": "OTP generado"
+    },
+    {
+        "event": "EVENT_FAILED_OTP_DELIVERY",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:36:09",
+        "details": "Error enviando OTP por correo en login"
+    },
+    {
+        "event": "EVENT_FAILED_OTP_DELIVERY",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:37:15",
+        "details": "Error enviando OTP por correo en login"
+    },
+    {
+        "event": "EVENT_REGISTER",
+        "email": "jhe@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:38:43",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_FAILED_OTP_DELIVERY",
+        "email": "jhe@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:38:45",
+        "details": "Error enviando OTP por correo en registro"
+    },
+    {
+        "event": "EVENT_REGISTER",
+        "email": "jhe@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:38:45",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_FAILED_OTP_DELIVERY",
+        "email": "jhe@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 20:38:47",
+        "details": "Error enviando OTP por correo en registro"
+    },
+    {
+        "event": "EVENT_REGISTER",
+        "email": "juan12@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 21:11:12",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_FAILED_OTP_DELIVERY",
+        "email": "juan12@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 21:11:14",
+        "details": "Error enviando OTP por correo en registro"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "juan@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 21:24:02",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_REGISTER",
+        "email": "ramirezmelgardavid@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 21:25:38",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_OTP_SENT",
+        "email": "ramirezmelgardavid@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 21:25:43",
+        "details": "OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "ramirezmelgardavid@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 21:26:29",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "ramirezmelgardavid@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 21:26:55",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "ramirezmelgardavid@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 21:27:00",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "ramirezmelgardavid@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-24 21:27:18",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_REGISTER",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 08:55:10",
+        "details": "Usuario registrado"
+    },
+    {
+        "event": "EVENT_OTP_SENT",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 08:55:14",
+        "details": "OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 08:56:19",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:13:24",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:13:45",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:19:34",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:20:05",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:30:03",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_FAILED_OTP",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:36:09",
+        "details": "C\u00f3digo incorrecto o expirado"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:36:26",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:36:50",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:51:38",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:52:09",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:54:53",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "gheta123@hotmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 09:55:25",
+        "details": "Login exitoso"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "gomezsanjean@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 10:14:19",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN_ATTEMPT",
+        "email": "gomezsanjean@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 10:17:22",
+        "details": "Credenciales v\u00e1lidas, OTP enviado por correo"
+    },
+    {
+        "event": "EVENT_LOGIN",
+        "email": "gomezsanjean@gmail.com",
+        "ip": "::1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/142.0.0.0 Safari\/537.36",
+        "created_at": "2026-02-25 10:17:40",
+        "details": "Login exitoso"
+    }
+]
