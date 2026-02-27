@@ -49,46 +49,6 @@ class AuthController
         redirect(route('auth', 'verify'));
     }
 
-    public function register()
-    {
-        require VIEW_PATH . '/register.php';
-    }
-
-    public function doRegister()
-    {
-        $name = $_POST['name'];
-        $email = $_POST['email'];
-        $password = $_POST['password'];
-
-        $userModel = new UserModel();
-        $userModel->create([
-            'name' => $name,
-            'email' => $email,
-            'password' => password_hash($password, PASSWORD_DEFAULT)
-        ]);
-
-        $audit = new AuditModel();
-        $audit->log('EVENT_REGISTER', $email, 'Usuario registrado');
-
-        $otpModel = new OTPModel();
-        $otpCode = $otpModel->generate($email);
-
-        $mailer = new MailerService();
-        $otpSent = $mailer->sendOTP($email, (string)$otpCode);
-
-        if (!$otpSent) {
-            echo "❌ Usuario registrado, pero no se pudo enviar el OTP al correo.<br>";
-            echo "<a href='" . route('auth', 'login') . "'>Ir al login</a>";
-            $audit->log('EVENT_FAILED_OTP_DELIVERY', $email, 'Error enviando OTP por correo en registro');
-            return;
-        }
-
-        $_SESSION['otp_email'] = $email;
-        $audit->log('EVENT_OTP_SENT', $email, 'OTP enviado por correo');
-
-        redirect(route('auth', 'verify'));
-    }
-
     public function verify()
     {
         require VIEW_PATH . '/verify.php';
@@ -100,7 +60,7 @@ class AuthController
         $email = $_SESSION['otp_email'] ?? null;
 
         if (!$email) {
-            die("Sesión expirada. Regístrese nuevamente.");
+            die("Sesión expirada. Inicie sesión nuevamente.");
         }
 
         $otpModel = new OTPModel();

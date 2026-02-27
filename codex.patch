@@ -1,144 +1,119 @@
-diff --git a/app/views/add_employee.php b/app/views/add_employee.php
-index 27ab2887891f5415e29564421369009fd1e0d8d7..8920e0963623056854e9d567d8fe61dd19ef1cd2 100644
---- a/app/views/add_employee.php
-+++ b/app/views/add_employee.php
-@@ -1,35 +1,37 @@
- <!DOCTYPE html>
- <html lang="es">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Agregar nuevo empleado</title>
-     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
-     <link rel="stylesheet" href="<?= asset('dashboard.css') ?>">
-+    <script src="<?= asset('theme.js') ?>" defer></script>
- </head>
- <body class="dashboard-body">
-+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
- <div class="employee-shell">
-     <section class="employee-modal">
-         <div class="employee-modal__header">
-             <h1>Agregar Nuevo Empleado</h1>
-             <a class="employee-modal__close" href="<?= route('dashboard', 'index') ?>" aria-label="Cerrar">×</a>
-         </div>
+diff --git a/app/controllers/AuthController.php b/app/controllers/AuthController.php
+index 0bb737a18f259d89a761724ec99c302731f60c97..a873f8ac9d849cb00f12edbcbf2f0f35237b9e81 100644
+--- a/app/controllers/AuthController.php
++++ b/app/controllers/AuthController.php
+@@ -27,99 +27,59 @@ class AuthController
+         }
  
-         <form class="employee-form" method="get" action="<?= route('dashboard', 'index') ?>">
-             <h2>Información del Usuario</h2>
-             <div class="employee-grid employee-grid--two">
-                 <div class="field">
-                     <label for="full_name">Nombre Completo *</label>
-                     <input id="full_name" name="full_name" type="text" placeholder="Ej: Juan Pérez García" required>
-                 </div>
+         $otpModel = new OTPModel();
+         $otpCode = $otpModel->generate($email);
  
-                 <div class="field">
-                     <label for="email">Correo Electrónico *</label>
-                     <input id="email" name="email" type="email" placeholder="juan.perez@empresa.com" required>
-                 </div>
+         $mailer = new MailerService();
+         $otpSent = $mailer->sendOTP($email, (string)$otpCode);
  
-                 <div class="field">
-                     <label for="phone">Teléfono</label>
-                     <input id="phone" name="phone" type="text" placeholder="+51 999 999 999">
-                 </div>
-             </div>
-diff --git a/app/views/audit.php b/app/views/audit.php
-index 8ca520be7874db55d77e25ebd397565b25f34700..48064ba83e416e3434e5be2337c2ed3d6a4d1e02 100644
---- a/app/views/audit.php
-+++ b/app/views/audit.php
-@@ -1,34 +1,36 @@
- <!DOCTYPE html>
- <html lang="es">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Auditoría del Sistema</title>
-     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
-+    <script src="<?= asset('theme.js') ?>" defer></script>
- </head>
- <body>
-+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
- <div class="page-shell">
-     <section class="panel panel--wide">
-         <h1>Auditoría del sistema</h1>
-         <p class="subtitle">Registro de eventos y actividad reciente.</p>
+         if (!$otpSent) {
+             echo "❌ No se pudo enviar el OTP al correo. Intenta nuevamente.<br>";
+             echo "<a href='" . route('auth', 'login') . "'>Volver</a>";
  
-         <div class="table-wrap">
-             <table class="audit-table">
-                 <thead>
-                 <tr>
-                     <th>Evento</th>
-                     <th>Email</th>
-                     <th>IP</th>
-                     <th>Fecha</th>
-                     <th>Detalles</th>
-                 </tr>
-                 </thead>
-                 <tbody>
-                 <?php foreach ($logs as $log): ?>
-                     <tr>
-                         <td><?= $log['event'] ?></td>
-                         <td><?= $log['email'] ?></td>
-                         <td><?= $log['ip'] ?></td>
-                         <td><?= $log['created_at'] ?></td>
-                         <td><?= $log['details'] ?></td>
-                     </tr>
-diff --git a/app/views/dashboard.php b/app/views/dashboard.php
-index 9b5beb76993217e33cda73a0d30f7db0cd5ea0f1..fd9f872de326b6594056d06277667d187ad2eef6 100644
---- a/app/views/dashboard.php
-+++ b/app/views/dashboard.php
-@@ -1,35 +1,37 @@
- <!DOCTYPE html>
- <html lang="es">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Dashboard RRHH</title>
-     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
-     <link rel="stylesheet" href="<?= asset('dashboard.css') ?>">
-+    <script src="<?= asset('theme.js') ?>" defer></script>
- </head>
- <body class="dashboard-body">
-+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
- <?php
- $view = $_GET['view'] ?? 'table';
- $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
- ?>
- <div class="dashboard-layout">
-     <aside class="dashboard-sidebar">
-         <h3>Dashboard</h3>
-         <p>Panel de Administración</p>
+             $audit = new AuditModel();
+             $audit->log('EVENT_FAILED_OTP_DELIVERY', $email, 'Error enviando OTP por correo en login');
+             return;
+         }
  
-         <span class="sidebar-section">PANEL</span>
-         <a class="sidebar-link active" href="<?= route('dashboard', 'index') ?>">Inicio</a>
-         <a class="sidebar-link" href="<?= route('dashboard', 'audit') ?>">Auditoría</a>
+         $_SESSION['otp_email'] = $email;
  
-         <span class="sidebar-section">GENERAL</span>
-         <a class="sidebar-link" href="<?= route('dashboard', 'addEmployee') ?>">Agregar empleado</a>
-         <a class="sidebar-link" href="<?= route('dashboard', 'logout') ?>">Cerrar sesión</a>
-     </aside>
+         $audit = new AuditModel();
+         $audit->log('EVENT_LOGIN_ATTEMPT', $email, 'Credenciales válidas, OTP enviado por correo');
  
-     <main class="dashboard-main">
-         <section class="panel panel--wide hr-panel hr-panel--fullscreen">
-             <h1>Formulario Tabla Detallada</h1>
+         redirect(route('auth', 'verify'));
+     }
  
-             <div class="module-headline">
-                 <h2>Gestión Interna (RRHH & Ops)</h2>
-                 <p>Recursos humanos, soporte al cliente y comunidad</p>
+-    public function register()
+-    {
+-        require VIEW_PATH . '/register.php';
+-    }
+-
+-    public function doRegister()
+-    {
+-        $name = $_POST['name'];
+-        $email = $_POST['email'];
+-        $password = $_POST['password'];
+-
+-        $userModel = new UserModel();
+-        $userModel->create([
+-            'name' => $name,
+-            'email' => $email,
+-            'password' => password_hash($password, PASSWORD_DEFAULT)
+-        ]);
+-
+-        $audit = new AuditModel();
+-        $audit->log('EVENT_REGISTER', $email, 'Usuario registrado');
+-
+-        $otpModel = new OTPModel();
+-        $otpCode = $otpModel->generate($email);
+-
+-        $mailer = new MailerService();
+-        $otpSent = $mailer->sendOTP($email, (string)$otpCode);
+-
+-        if (!$otpSent) {
+-            echo "❌ Usuario registrado, pero no se pudo enviar el OTP al correo.<br>";
+-            echo "<a href='" . route('auth', 'login') . "'>Ir al login</a>";
+-            $audit->log('EVENT_FAILED_OTP_DELIVERY', $email, 'Error enviando OTP por correo en registro');
+-            return;
+-        }
+-
+-        $_SESSION['otp_email'] = $email;
+-        $audit->log('EVENT_OTP_SENT', $email, 'OTP enviado por correo');
+-
+-        redirect(route('auth', 'verify'));
+-    }
+-
+     public function verify()
+     {
+         require VIEW_PATH . '/verify.php';
+     }
+ 
+     public function verifyOTP()
+     {
+         $code = $_POST['code'];
+         $email = $_SESSION['otp_email'] ?? null;
+ 
+         if (!$email) {
+-            die("Sesión expirada. Regístrese nuevamente.");
++            die("Sesión expirada. Inicie sesión nuevamente.");
+         }
+ 
+         $otpModel = new OTPModel();
+         $isValid = $otpModel->verify($email, $code);
+ 
+         if (!$isValid) {
+             echo "❌ Código incorrecto o expirado<br>";
+             echo "<a href='" . route('auth', 'verify') . "'>Intentar de nuevo</a>";
+             $audit = new AuditModel();
+             $audit->log('EVENT_FAILED_OTP', $email, 'Código incorrecto o expirado');
+             return;
+         }
+ 
+         $audit = new AuditModel();
+         $audit->log('EVENT_LOGIN', $email, 'Login exitoso');
+ 
+         $_SESSION['user_id'] = $email;
+         unset($_SESSION['otp_email']);
+ 
+         redirect(route('dashboard', 'index'));
+     }
+ }
 diff --git a/app/views/login.php b/app/views/login.php
-index 2ba65b32061db8f9733e9428d3537d12a5b1994a..e211bcb4ec8fe3b8d0312a2d6fe75d1b24698379 100644
+index e211bcb4ec8fe3b8d0312a2d6fe75d1b24698379..e1c00f576d63ed734fd733bfff45093557d671a8 100644
 --- a/app/views/login.php
 +++ b/app/views/login.php
-@@ -1,34 +1,36 @@
- <!DOCTYPE html>
- <html lang="es">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -6,32 +6,29 @@
      <title>Login</title>
      <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
-+    <script src="<?= asset('theme.js') ?>" defer></script>
+     <script src="<?= asset('theme.js') ?>" defer></script>
  </head>
  <body>
-+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
+ <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
  <div class="page-shell">
      <section class="panel">
          <h1>Bienvenido de vuelta</h1>
@@ -158,302 +133,58 @@ index 2ba65b32061db8f9733e9428d3537d12a5b1994a..e211bcb4ec8fe3b8d0312a2d6fe75d1b
              <button class="btn-primary" type="submit">Iniciar sesión</button>
          </form>
  
-         <div class="links-row">
-             <a href="<?= route('auth', 'register') ?>">¿No tienes cuenta? Regístrate</a>
-         </div>
+-        <div class="links-row">
+-            <a href="<?= route('auth', 'register') ?>">¿No tienes cuenta? Regístrate</a>
+-        </div>
      </section>
  </div>
  </body>
+ </html>
 diff --git a/app/views/register.php b/app/views/register.php
-index b55656817b2ad8d633f1007c2574e077206ffc70..86e6c36907aae541ec54e6776525930fb0a2599a 100644
+deleted file mode 100644
+index 86e6c36907aae541ec54e6776525930fb0a2599a..0000000000000000000000000000000000000000
 --- a/app/views/register.php
-+++ b/app/views/register.php
-@@ -1,34 +1,36 @@
- <!DOCTYPE html>
- <html lang="es">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Registro</title>
-     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
-+    <script src="<?= asset('theme.js') ?>" defer></script>
- </head>
- <body>
-+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
- <div class="page-shell">
-     <section class="panel">
-         <h1>Crear cuenta</h1>
-         <p class="subtitle">Completa tus datos para registrarte en el sistema.</p>
- 
-         <form class="form-grid" method="POST" action="<?= route('auth', 'doRegister') ?>">
-             <div class="field">
-                 <label for="name">Nombre</label>
-                 <input id="name" type="text" name="name" placeholder="Tu nombre" required>
-             </div>
- 
-             <div class="field">
-                 <label for="email">Correo electrónico</label>
-                 <input id="email" type="email" name="email" placeholder="usuario@empresa.com" required>
-             </div>
- 
-             <div class="field">
-                 <label for="password">Contraseña</label>
-                 <input id="password" type="password" name="password" placeholder="Crea una contraseña" required>
-             </div>
- 
-             <button class="btn-primary" type="submit">Registrarse</button>
-         </form>
- 
-         <div class="links-row">
-diff --git a/app/views/verify.php b/app/views/verify.php
-index fb4d587b5038e7d5e84ee1eb7b837982a0c8862e..d36ae79b9ba179d8fe48a1c5bfca33b06c0477b2 100644
---- a/app/views/verify.php
-+++ b/app/views/verify.php
-@@ -1,34 +1,36 @@
- <!DOCTYPE html>
- <html lang="es">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Verificación OTP</title>
-     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
-+    <script src="<?= asset('theme.js') ?>" defer></script>
- </head>
- <body>
-+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
- <div class="page-shell">
-     <section class="panel">
-         <h1>Verificar código OTP</h1>
-         <p class="subtitle">Escribe el código de 6 dígitos que enviamos a tu correo.</p>
- 
-         <form id="otp-form" class="form-grid" method="POST" action="<?= route('auth', 'verifyOTP') ?>">
-             <div class="otp-group" role="group" aria-label="Código OTP de seis dígitos">
-                 <input class="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="1" pattern="[0-9]" aria-label="Dígito 1" required>
-                 <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Dígito 2" required>
-                 <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Dígito 3" required>
-                 <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Dígito 4" required>
-                 <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Dígito 5" required>
-                 <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Dígito 6" required>
-             </div>
- 
-             <input type="hidden" name="code" id="otp-code">
- 
-             <button class="btn-primary" type="submit">Verificar</button>
-         </form>
- 
-         <div class="links-row">
-             <a href="<?= route('auth', 'login') ?>">Volver al inicio de sesión</a>
-         </div>
-     </section>
- </div>
-diff --git a/public/dashboard.css b/public/dashboard.css
-index 981f7ec9585895b87744ee49fc8850f3e236864a..2773a46ff6c8bc37666207b7739a062c616693ed 100644
---- a/public/dashboard.css
-+++ b/public/dashboard.css
-@@ -398,25 +398,61 @@
- }
- 
- .employee-actions .btn-primary {
-     box-shadow: none;
- }
- 
- @media (max-width: 780px) {
-     .employee-grid--two {
-         grid-template-columns: 1fr;
-     }
- 
-     .photo-row {
-         flex-direction: column;
-         align-items: flex-start;
-     }
- 
-     .employee-actions {
-         justify-content: stretch;
-     }
- 
-     .employee-actions .btn-inline {
-         width: 100%;
-         justify-content: center;
-     }
- }
-+
-+body[data-theme='light'] .dashboard-sidebar {
-+    background: rgba(235, 243, 255, 0.96);
-+    border-right-color: rgba(113, 144, 207, 0.3);
-+}
-+
-+body[data-theme='light'] .sidebar-section,
-+body[data-theme='light'] .sidebar-link,
-+body[data-theme='light'] .hr-panel h2,
-+body[data-theme='light'] .tab-item,
-+body[data-theme='light'] .subtab-item,
-+body[data-theme='light'] .stat-card h4,
-+body[data-theme='light'] .stat-card small,
-+body[data-theme='light'] .profile-card p,
-+body[data-theme='light'] .profile-card small {
-+    color: #4a6288;
-+}
-+
-+body[data-theme='light'] .sidebar-link.active,
-+body[data-theme='light'] .sidebar-link:hover,
-+body[data-theme='light'] .tab-item.active,
-+body[data-theme='light'] .subtab-item.active {
-+    color: #214e96;
-+}
-+
-+body[data-theme='light'] .employee-modal {
-+    background: rgba(255, 255, 255, 0.98);
-+    border-color: #d5deec;
-+    color: #39424e;
-+}
-+
-+body[data-theme='light'] .employee-actions .btn-secondary {
-+    background: #edf4ff;
-+    border-color: #b9ccea;
-+    color: #2e5c8f;
-+}
-diff --git a/public/estilos.css b/public/estilos.css
-index cbb80234c75fdedacd02ebd1719a53fde124d731..0db6dabd35a8da3f7839dfda052fd3760d936095 100644
---- a/public/estilos.css
-+++ b/public/estilos.css
-@@ -534,25 +534,87 @@ textarea:focus {
- 
- .table-link:hover {
-     text-decoration: underline;
- }
- 
- .role-chip--admin {
-     background: rgba(243, 104, 130, 0.2);
-     border-color: rgba(250, 121, 145, 0.5);
-     color: #ff9fb1;
- }
- 
- @media (max-width: 980px) {
-     .dashboard-layout {
-         grid-template-columns: 1fr;
-     }
- 
-     .dashboard-sidebar {
-         border-right: 0;
-         border-bottom: 1px solid rgba(130, 156, 255, 0.18);
-     }
- 
-     .hr-panel--fullscreen {
-         min-height: auto;
-     }
- }
-+
-+.theme-toggle {
-+    position: fixed;
-+    top: 14px;
-+    right: 14px;
-+    z-index: 1200;
-+    border: 1px solid var(--border-soft);
-+    background: var(--bg-card);
-+    color: var(--text-main);
-+    border-radius: 999px;
-+    padding: 8px 14px;
-+    font-weight: 700;
-+    cursor: pointer;
-+    backdrop-filter: blur(8px);
-+}
-+
-+body[data-theme='light'] {
-+    --bg-main: #edf3ff;
-+    --bg-card: rgba(255, 255, 255, 0.94);
-+    --border-soft: rgba(76, 109, 188, 0.22);
-+    --text-main: #20304d;
-+    --text-muted: #5f7395;
-+    --accent-start: #2e78f8;
-+    --accent-end: #5d63f7;
-+    --input-bg: rgba(245, 249, 255, 0.96);
-+    --table-row: rgba(238, 244, 253, 0.95);
-+    color-scheme: light;
-+}
-+
-+body[data-theme='light'] .field label,
-+body[data-theme='light'] .panel h1,
-+body[data-theme='light'] .panel h2,
-+body[data-theme='light'] .panel h3,
-+body[data-theme='light'] .module-headline h2,
-+body[data-theme='light'] .table-link,
-+body[data-theme='light'] .inline-link,
-+body[data-theme='light'] .links-row a {
-+    color: #2f4970;
-+}
-+
-+body[data-theme='light'] input,
-+body[data-theme='light'] select,
-+body[data-theme='light'] textarea {
-+    color: #2d3f5b;
-+    border-color: rgba(93, 126, 198, 0.35);
-+}
-+
-+body[data-theme='light'] .btn-secondary {
-+    color: #2e5689;
-+    border-color: rgba(74, 112, 190, 0.35);
-+    background: rgba(218, 232, 255, 0.75);
-+}
-+
-+body[data-theme='light'] .info-list li,
-+body[data-theme='light'] .audit-table th,
-+body[data-theme='light'] .audit-table td,
-+body[data-theme='light'] .stat-card,
-+body[data-theme='light'] .gallery-grid,
-+body[data-theme='light'] .profile-card {
-+    background: rgba(240, 246, 255, 0.86);
-+    border-color: rgba(95, 126, 192, 0.24);
-+}
-diff --git a/public/theme.js b/public/theme.js
-new file mode 100644
-index 0000000000000000000000000000000000000000..052ee863239f758d1d38b2bea90755c07da8838b
---- /dev/null
-+++ b/public/theme.js
-@@ -0,0 +1,47 @@
-+(() => {
-+    const storageKey = 'ui-theme';
-+
-+    const getPreferredTheme = () => {
-+        const savedTheme = localStorage.getItem(storageKey);
-+        if (savedTheme === 'light' || savedTheme === 'dark') {
-+            return savedTheme;
-+        }
-+
-+        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-+    };
-+
-+    const getToggleMeta = (theme) => {
-+        if (theme === 'dark') {
-+            return { label: '☀️ Modo claro', aria: 'Cambiar a modo claro' };
-+        }
-+
-+        return { label: '🌙 Modo oscuro', aria: 'Cambiar a modo oscuro' };
-+    };
-+
-+    const applyTheme = (theme) => {
-+        document.body.setAttribute('data-theme', theme);
-+
-+        const toggle = document.querySelector('[data-theme-toggle]');
-+        if (toggle) {
-+            const meta = getToggleMeta(theme);
-+            toggle.textContent = meta.label;
-+            toggle.setAttribute('aria-label', meta.aria);
-+        }
-+    };
-+
-+    document.addEventListener('DOMContentLoaded', () => {
-+        applyTheme(getPreferredTheme());
-+
-+        const toggle = document.querySelector('[data-theme-toggle]');
-+        if (!toggle) {
-+            return;
-+        }
-+
-+        toggle.addEventListener('click', () => {
-+            const currentTheme = document.body.getAttribute('data-theme') || 'dark';
-+            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-+            localStorage.setItem(storageKey, nextTheme);
-+            applyTheme(nextTheme);
-+        });
-+    });
-+})();
++++ /dev/null
+@@ -1,42 +0,0 @@
+-<!DOCTYPE html>
+-<html lang="es">
+-<head>
+-    <meta charset="UTF-8">
+-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+-    <title>Registro</title>
+-    <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
+-    <script src="<?= asset('theme.js') ?>" defer></script>
+-</head>
+-<body>
+-<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
+-<div class="page-shell">
+-    <section class="panel">
+-        <h1>Crear cuenta</h1>
+-        <p class="subtitle">Completa tus datos para registrarte en el sistema.</p>
+-
+-        <form class="form-grid" method="POST" action="<?= route('auth', 'doRegister') ?>">
+-            <div class="field">
+-                <label for="name">Nombre</label>
+-                <input id="name" type="text" name="name" placeholder="Tu nombre" required>
+-            </div>
+-
+-            <div class="field">
+-                <label for="email">Correo electrónico</label>
+-                <input id="email" type="email" name="email" placeholder="usuario@empresa.com" required>
+-            </div>
+-
+-            <div class="field">
+-                <label for="password">Contraseña</label>
+-                <input id="password" type="password" name="password" placeholder="Crea una contraseña" required>
+-            </div>
+-
+-            <button class="btn-primary" type="submit">Registrarse</button>
+-        </form>
+-
+-        <div class="links-row">
+-            <a href="<?= route('auth', 'login') ?>">Volver al login</a>
+-        </div>
+-    </section>
+-</div>
+-</body>
+-</html>

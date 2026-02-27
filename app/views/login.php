@@ -28,9 +28,6 @@
             <button class="btn-primary" type="submit">Iniciar sesión</button>
         </form>
 
-        <div class="links-row">
-            <a href="<?= route('auth', 'register') ?>">¿No tienes cuenta? Regístrate</a>
-        </div>
     </section>
 </div>
 </body>
