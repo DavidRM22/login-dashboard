@@ -6,8 +6,10 @@
     <title>Dashboard RRHH</title>
     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
     <link rel="stylesheet" href="<?= asset('dashboard.css') ?>">
+    <script src="<?= asset('theme.js') ?>" defer></script>
 </head>
 <body class="dashboard-body">
+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
 <?php
 $view = $_GET['view'] ?? 'table';
 $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';

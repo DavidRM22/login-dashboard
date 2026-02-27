@@ -420,3 +420,39 @@
         justify-content: center;
     }
 }
+
+body[data-theme='light'] .dashboard-sidebar {
+    background: rgba(235, 243, 255, 0.96);
+    border-right-color: rgba(113, 144, 207, 0.3);
+}
+
+body[data-theme='light'] .sidebar-section,
+body[data-theme='light'] .sidebar-link,
+body[data-theme='light'] .hr-panel h2,
+body[data-theme='light'] .tab-item,
+body[data-theme='light'] .subtab-item,
+body[data-theme='light'] .stat-card h4,
+body[data-theme='light'] .stat-card small,
+body[data-theme='light'] .profile-card p,
+body[data-theme='light'] .profile-card small {
+    color: #4a6288;
+}
+
+body[data-theme='light'] .sidebar-link.active,
+body[data-theme='light'] .sidebar-link:hover,
+body[data-theme='light'] .tab-item.active,
+body[data-theme='light'] .subtab-item.active {
+    color: #214e96;
+}
+
+body[data-theme='light'] .employee-modal {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: #d5deec;
+    color: #39424e;
+}
+
+body[data-theme='light'] .employee-actions .btn-secondary {
+    background: #edf4ff;
+    border-color: #b9ccea;
+    color: #2e5c8f;
+}

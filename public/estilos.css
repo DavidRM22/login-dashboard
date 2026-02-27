@@ -556,3 +556,65 @@ textarea:focus {
         min-height: auto;
     }
 }
+
+.theme-toggle {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 1200;
+    border: 1px solid var(--border-soft);
+    background: var(--bg-card);
+    color: var(--text-main);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+}
+
+body[data-theme='light'] {
+    --bg-main: #edf3ff;
+    --bg-card: rgba(255, 255, 255, 0.94);
+    --border-soft: rgba(76, 109, 188, 0.22);
+    --text-main: #20304d;
+    --text-muted: #5f7395;
+    --accent-start: #2e78f8;
+    --accent-end: #5d63f7;
+    --input-bg: rgba(245, 249, 255, 0.96);
+    --table-row: rgba(238, 244, 253, 0.95);
+    color-scheme: light;
+}
+
+body[data-theme='light'] .field label,
+body[data-theme='light'] .panel h1,
+body[data-theme='light'] .panel h2,
+body[data-theme='light'] .panel h3,
+body[data-theme='light'] .module-headline h2,
+body[data-theme='light'] .table-link,
+body[data-theme='light'] .inline-link,
+body[data-theme='light'] .links-row a {
+    color: #2f4970;
+}
+
+body[data-theme='light'] input,
+body[data-theme='light'] select,
+body[data-theme='light'] textarea {
+    color: #2d3f5b;
+    border-color: rgba(93, 126, 198, 0.35);
+}
+
+body[data-theme='light'] .btn-secondary {
+    color: #2e5689;
+    border-color: rgba(74, 112, 190, 0.35);
+    background: rgba(218, 232, 255, 0.75);
+}
+
+body[data-theme='light'] .info-list li,
+body[data-theme='light'] .audit-table th,
+body[data-theme='light'] .audit-table td,
+body[data-theme='light'] .stat-card,
+body[data-theme='light'] .gallery-grid,
+body[data-theme='light'] .profile-card {
+    background: rgba(240, 246, 255, 0.86);
+    border-color: rgba(95, 126, 192, 0.24);
+}
