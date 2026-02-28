@@ -18,6 +18,14 @@
         </div>
 
         <form class="employee-form" method="post" action="<?= route('dashboard', 'saveEmployee') ?>">
+
+        <?php if (!empty($_SESSION['employee_temp_password_message'])): ?>
+            <div class="alert alert-success alert-inline">
+                ✅ <?= htmlspecialchars($_SESSION['employee_temp_password_message']) ?>
+            </div>
+            <?php unset($_SESSION['employee_temp_password_message']); ?>
+        <?php endif; ?>
+
             <h2>Información del Usuario</h2>
             <div class="employee-grid employee-grid--two">
                 <div class="field">

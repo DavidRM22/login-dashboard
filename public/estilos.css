@@ -618,3 +618,107 @@ body[data-theme='light'] .profile-card {
     background: rgba(240, 246, 255, 0.86);
     border-color: rgba(95, 126, 192, 0.24);
 }
+
+.alert {
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border: 1px solid transparent;
+    font-weight: 600;
+}
+
+.alert-success {
+    background: rgba(62, 184, 117, 0.16);
+    border-color: rgba(79, 199, 132, 0.35);
+    color: #7ce3ac;
+}
+
+.alert-error {
+    background: rgba(216, 76, 103, 0.16);
+    border-color: rgba(238, 99, 125, 0.4);
+    color: #ff9fb1;
+}
+
+.alert-inline {
+    margin-bottom: 18px;
+}
+
+.password-info-box {
+    border: 1px solid rgba(127, 152, 212, 0.3);
+    border-radius: 12px;
+    padding: 12px 14px;
+    background: rgba(28, 45, 78, 0.6);
+    margin-bottom: 16px;
+}
+
+.password-info-box p {
+    margin: 6px 0 0;
+    color: var(--text-muted);
+}
+
+.password-strength {
+    margin-top: -8px;
+}
+
+.password-strength__label {
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #c5d6f6;
+}
+
+.requirements {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.requirements li {
+    color: #9faece;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.requirements li::before {
+    content: '○';
+    font-weight: 700;
+}
+
+.requirements li.is-valid {
+    color: #50d485;
+}
+
+.requirements li.is-valid::before {
+    content: '✓';
+}
+
+body[data-theme='light'] .alert-success {
+    background: rgba(82, 190, 131, 0.18);
+    border-color: rgba(69, 164, 112, 0.4);
+    color: #1e8754;
+}
+
+body[data-theme='light'] .alert-error {
+    background: rgba(235, 94, 120, 0.16);
+    border-color: rgba(205, 72, 96, 0.35);
+    color: #b42f4c;
+}
+
+body[data-theme='light'] .password-info-box {
+    background: rgba(237, 244, 255, 0.88);
+    border-color: rgba(93, 126, 198, 0.3);
+}
+
+body[data-theme='light'] .password-strength__label {
+    color: #415f8d;
+}
+
+body[data-theme='light'] .requirements li {
+    color: #5f7395;
+}
+
+body[data-theme='light'] .requirements li.is-valid {
+    color: #2e9962;
+}

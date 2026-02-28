@@ -14,6 +14,16 @@
         <h1>Bienvenido de vuelta</h1>
         <p class="subtitle">Ingresa tus credenciales para continuar.</p>
 
+        <?php if (!empty($_SESSION['login_error'])): ?>
+            <div class="alert alert-error"><?= htmlspecialchars($_SESSION['login_error']) ?></div>
+            <?php unset($_SESSION['login_error']); ?>
+        <?php endif; ?>
+
+        <?php if (!empty($_SESSION['password_change_success'])): ?>
+            <div class="alert alert-success"><?= htmlspecialchars($_SESSION['password_change_success']) ?></div>
+            <?php unset($_SESSION['password_change_success']); ?>
+        <?php endif; ?>
+
         <form class="form-grid" method="POST" action="<?= route('auth', 'doLogin') ?>">
             <div class="field">
                 <label for="email">Correo electrónico</label>

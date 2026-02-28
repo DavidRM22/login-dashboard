@@ -5,27 +5,61 @@ require_once MODEL_PATH . '/AuditModel.php';
 
 class DashboardController
 {
+    private function enforcePasswordUpdated()
+    {
+        $email = $_SESSION['user_id'] ?? null;
+        if (!$email) {
+            return;
+        }
+
+        $userModel = new UserModel();
+        $user = $userModel->findByEmail($email);
+
+        if (!empty($user['must_change_password'])) {
+            redirect(route('auth', 'changePasswordRequired'));
+        }
+    }
+
+    private function generateTemporaryPassword()
+    {
+        $lower = 'abcdefghijklmnopqrstuvwxyz';
+        $upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $digits = '0123456789';
+        $special = '!@#$%^&*';
+
+        $requiredChars = [
+            $lower[random_int(0, strlen($lower) - 1)],
+            $upper[random_int(0, strlen($upper) - 1)],
+            $digits[random_int(0, strlen($digits) - 1)],
+            $special[random_int(0, strlen($special) - 1)],
+        ];
+
+        $all = $lower . $upper . $digits . $special;
+        for ($i = 0; $i < 4; $i++) {
+            $requiredChars[] = $all[random_int(0, strlen($all) - 1)];
+        }
+
+        shuffle($requiredChars);
+
+        return 'TechSkills' . implode('', $requiredChars);
+    }
+
     public function index()
     {
-        // 1. Proteger ruta
         authRequired();
+        $this->enforcePasswordUpdated();
 
-        // 2. Obtener usuario
         $email = $_SESSION['user_id'];
 
         $userModel = new UserModel();
         $user = $userModel->findByEmail($email);
-        // obtener todos los empleados para listarlos en el dashboard
         $allUsersRaw = json_decode(file_get_contents(DATA_PATH . '/users.json'), true);
 
-        // leer filtros desde GET
         $search = trim($_GET['search'] ?? '');
         $typeFilter = trim($_GET['type'] ?? '');
         $statusFilter = trim($_GET['status'] ?? '');
 
-        // aplicar filtros (si existen)
         $allUsers = array_values(array_filter($allUsersRaw, function ($u) use ($search, $typeFilter, $statusFilter) {
-            // búsqueda libre sobre nombre, email y puesto
             if ($search !== '') {
                 $hay = false;
                 $needle = mb_strtolower($search);
@@ -49,7 +83,6 @@ class DashboardController
             return true;
         }));
 
-        // 3. Cargar vista
         require VIEW_PATH . '/dashboard.php';
     }
 
@@ -57,12 +90,14 @@ class DashboardController
     public function addEmployee()
     {
         authRequired();
+        $this->enforcePasswordUpdated();
         require VIEW_PATH . '/add_employee.php';
     }
 
     public function saveEmployee()
     {
         authRequired();
+        $this->enforcePasswordUpdated();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect(route('dashboard', 'index'));
@@ -77,11 +112,15 @@ class DashboardController
         $payload['position'] = trim($_POST['position'] ?? '');
         $payload['hired_at'] = trim($_POST['hired_at'] ?? '');
         $payload['status'] = trim($_POST['status'] ?? '');
+        $payload['password'] = $this->generateTemporaryPassword();
+        $payload['must_change_password'] = true;
 
         $userModel = new UserModel();
         $userModel->create($payload);
 
-        redirect(route('dashboard', 'index'));
+        $_SESSION['employee_temp_password_message'] = 'Empleado creado exitosamente. Contraseña temporal: ' . $payload['password'] . '. Guarde esta información.';
+
+        redirect(route('dashboard', 'addEmployee'));
     }
 
     public function logout()
@@ -92,12 +131,12 @@ class DashboardController
 
     public function audit()
     {
-    authRequired();
+        authRequired();
+        $this->enforcePasswordUpdated();
 
-    $auditModel = new AuditModel();
-    $logs = json_decode(file_get_contents(DATA_PATH . '/audit.json'), true);
+        $auditModel = new AuditModel();
+        $logs = json_decode(file_get_contents(DATA_PATH . '/audit.json'), true);
 
-    require VIEW_PATH . '/audit.php';
+        require VIEW_PATH . '/audit.php';
     }
-
 }

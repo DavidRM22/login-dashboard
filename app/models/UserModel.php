@@ -21,6 +21,9 @@ class UserModel
         $users = json_decode(file_get_contents($this->jsonFile), true);
         $record = [];
 
+        $rawPassword = (string)($data['password'] ?? '');
+        $mustChangePassword = (bool)($data['must_change_password'] ?? false);
+
         $record['id'] = uniqid();
         $record['name'] = isset($data['full_name']) ? $data['full_name'] : ($data['name'] ?? '');
         $record['email'] = $data['email'] ?? '';
@@ -30,6 +33,10 @@ class UserModel
         $record['position'] = $data['position'] ?? '';
         $record['hired_at'] = $data['hired_at'] ?? '';
         $record['status'] = $data['status'] ?? '';
+        if ($rawPassword !== '') {
+            $record['password'] = password_hash($rawPassword, PASSWORD_DEFAULT);
+            $record['must_change_password'] = $mustChangePassword;
+        }
         $record['created_at'] = date('Y-m-d H:i:s');
 
         $users[] = $record;
@@ -72,5 +79,27 @@ class UserModel
         }
 
         return null;
+    }
+
+    public function updatePasswordByEmail($email, $newPassword)
+    {
+        $users = json_decode(file_get_contents($this->jsonFile), true);
+        $updated = false;
+
+        foreach ($users as &$user) {
+            if (($user['email'] ?? null) === $email) {
+                $user['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
+                $user['must_change_password'] = false;
+                $updated = true;
+                break;
+            }
+        }
+        unset($user);
+
+        if ($updated) {
+            file_put_contents($this->jsonFile, json_encode($users, JSON_PRETTY_PRINT));
+        }
+
+        return $updated;
     }
 }

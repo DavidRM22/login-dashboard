@@ -268,5 +268,17 @@
         "hired_at": "2026-02-27",
         "status": "Activo",
         "created_at": "2026-02-27 18:47:48"
+    },
+    {
+        "id": "69a232be631cb",
+        "name": "jeaa",
+        "email": "pruebasperu3.2@gmail.com",
+        "phone": "912345678",
+        "type": "Administrador",
+        "department": "Seleccionar departamento",
+        "position": "Seleccionar puesto",
+        "hired_at": "",
+        "status": "Activo",
+        "created_at": "2026-02-27 19:11:42"
     }
 ]
