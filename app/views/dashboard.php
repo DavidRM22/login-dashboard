@@ -141,13 +141,32 @@ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
 
             <?php if ($activeView === 'gallery'): ?>
                 <div class="gallery-grid">
-                    <article class="profile-card">
-                        <div class="avatar"><?= strtoupper(substr($user['name'], 0, 1)) ?></div>
-                        <h4><?= $user['name'] ?></h4>
-                        <span class="role-chip">Instructor</span>
-                        <p><?= $user['email'] ?></p>
-                        <small>Registrado: <?= $user['created_at'] ?></small>
-                    </article>
+                    <?php
+                    $galleryRows = $allUsers ?? [];
+                    if (empty($galleryRows)) {
+                        $galleryRows = isset($user) ? [$user] : [];
+                    }
+                    ?>
+                    <?php foreach ($galleryRows as $u): ?>
+                        <?php
+                        $name = trim($u['name'] ?? '');
+                        $initial = strtoupper(substr($name !== '' ? $name : 'N', 0, 1));
+                        $photoUrl = trim($u['photo_url'] ?? '');
+                        ?>
+                        <article class="profile-card">
+                            <?php if ($photoUrl !== ''): ?>
+                                <div class="avatar avatar--image">
+                                    <img src="<?= asset($photoUrl) ?>" alt="Foto de <?= htmlspecialchars($name) ?>">
+                                </div>
+                            <?php else: ?>
+                                <div class="avatar"><?= htmlspecialchars($initial) ?></div>
+                            <?php endif; ?>
+                            <h4><?= htmlspecialchars($name) ?></h4>
+                            <span class="role-chip"><?= htmlspecialchars($u['type'] ?? 'Sin tipo') ?></span>
+                            <p><?= htmlspecialchars($u['email'] ?? '') ?></p>
+                            <small>Registrado: <?= htmlspecialchars($u['created_at'] ?? '-') ?></small>
+                        </article>
+                    <?php endforeach; ?>
                 </div>
             <?php else: ?>
                 <div class="table-wrap table-wrap--dashboard">

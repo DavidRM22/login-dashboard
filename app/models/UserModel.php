@@ -33,6 +33,7 @@ class UserModel
         $record['position'] = $data['position'] ?? '';
         $record['hired_at'] = $data['hired_at'] ?? '';
         $record['status'] = $data['status'] ?? '';
+        $record['photo_url'] = $data['photo_url'] ?? null;
         if ($rawPassword !== '') {
             $record['password'] = password_hash($rawPassword, PASSWORD_DEFAULT);
             $record['must_change_password'] = $mustChangePassword;
@@ -47,8 +48,8 @@ class UserModel
         try {
             $db = Database::connect();
 
-            $sql = "INSERT INTO users (id, name, email, phone, type, department, position, hired_at, status, created_at)
-                    VALUES (:id, :name, :email, :phone, :type, :department, :position, :hired_at, :status, :created_at)";
+            $sql = "INSERT INTO users (id, name, email, phone, type, department, position, hired_at, status, photo_url, created_at)
+                    VALUES (:id, :name, :email, :phone, :type, :department, :position, :hired_at, :status, :photo_url, :created_at)";
 
             $stmt = $db->prepare($sql);
             $stmt->execute([
@@ -61,6 +62,7 @@ class UserModel
                 ':position' => $record['position'],
                 ':hired_at' => $record['hired_at'],
                 ':status' => $record['status'],
+                ':photo_url' => $record['photo_url'],
                 ':created_at' => $record['created_at']
             ]);
         } catch (Exception $e) {

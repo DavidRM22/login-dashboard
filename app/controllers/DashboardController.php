@@ -5,6 +5,53 @@ require_once MODEL_PATH . '/AuditModel.php';
 
 class DashboardController
 {
+    private function processProfilePhotoUpload()
+    {
+        if (empty($_FILES['profile_photo']) || ($_FILES['profile_photo']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            return null;
+        }
+
+        $photo = $_FILES['profile_photo'];
+
+        if (($photo['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+            $_SESSION['employee_error_message'] = 'No se pudo cargar la foto de perfil. Intente nuevamente.';
+            return null;
+        }
+
+        if (($photo['size'] ?? 0) > 2 * 1024 * 1024) {
+            $_SESSION['employee_error_message'] = 'La foto de perfil supera el tamaño máximo permitido (2 MB).';
+            return null;
+        }
+
+        $mimeType = mime_content_type($photo['tmp_name']);
+        $allowedTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            'image/gif' => 'gif',
+        ];
+
+        if (!isset($allowedTypes[$mimeType])) {
+            $_SESSION['employee_error_message'] = 'Formato de imagen no válido. Use JPG, PNG, WEBP o GIF.';
+            return null;
+        }
+
+        $uploadDir = BASE_PATH . '/public/uploads/profiles';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0775, true);
+        }
+
+        $fileName = 'profile_' . uniqid('', true) . '.' . $allowedTypes[$mimeType];
+        $destination = $uploadDir . '/' . $fileName;
+
+        if (!move_uploaded_file($photo['tmp_name'], $destination)) {
+            $_SESSION['employee_error_message'] = 'No se pudo guardar la imagen en el servidor.';
+            return null;
+        }
+
+        return 'uploads/profiles/' . $fileName;
+    }
+
     private function enforcePasswordUpdated()
     {
         $email = $_SESSION['user_id'] ?? null;
@@ -114,11 +161,18 @@ class DashboardController
         $payload['status'] = trim($_POST['status'] ?? '');
         $payload['password'] = $this->generateTemporaryPassword();
         $payload['must_change_password'] = true;
+        $payload['photo_url'] = $this->processProfilePhotoUpload();
 
         $userModel = new UserModel();
         $userModel->create($payload);
 
-        $_SESSION['employee_temp_password_message'] = 'Empleado creado exitosamente. Contraseña temporal: ' . $payload['password'] . '. Guarde esta información.';
+        $baseMessage = 'Empleado creado exitosamente. Contraseña temporal: ' . $payload['password'] . '. Guarde esta información.';
+        if (!empty($_SESSION['employee_error_message'])) {
+            $_SESSION['employee_temp_password_message'] = $baseMessage . ' (La foto no pudo guardarse: ' . $_SESSION['employee_error_message'] . ')';
+            unset($_SESSION['employee_error_message']);
+        } else {
+            $_SESSION['employee_temp_password_message'] = $baseMessage;
+        }
 
         redirect(route('dashboard', 'addEmployee'));
     }

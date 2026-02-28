@@ -17,7 +17,7 @@
             <a class="employee-modal__close" href="<?= route('dashboard', 'index') ?>" aria-label="Cerrar">×</a>
         </div>
 
-        <form class="employee-form" method="post" action="<?= route('dashboard', 'saveEmployee') ?>">
+        <form class="employee-form" method="post" action="<?= route('dashboard', 'saveEmployee') ?>" enctype="multipart/form-data">
 
         <?php if (!empty($_SESSION['employee_temp_password_message'])): ?>
             <div class="alert alert-success alert-inline">
@@ -46,10 +46,11 @@
 
             <h2>Foto de Perfil</h2>
             <div class="photo-row">
-                <div class="photo-placeholder">📷</div>
+                <div class="photo-placeholder" id="photoPreview" aria-label="Vista previa de foto de perfil">📷</div>
                 <div>
-                    <button class="btn-secondary btn-inline" type="button">Capturar Foto con Reconocimiento Facial</button>
-                    <p>Opcional: Captura la foto del empleado con verificación biométrica</p>
+                    <label class="btn-secondary btn-inline" for="profile_photo">Seleccionar Foto</label>
+                    <input id="profile_photo" name="profile_photo" type="file" accept="image/*" class="profile-photo-input">
+                    <p>Opcional: sube una imagen real (JPG, PNG, WEBP o GIF - máx. 2 MB).</p>
                 </div>
             </div>
 
@@ -117,5 +118,37 @@
         </form>
     </section>
 </div>
+
+<script>
+(function () {
+    var input = document.getElementById('profile_photo');
+    var preview = document.getElementById('photoPreview');
+    if (!input || !preview) return;
+
+    var activeObjectUrl = null;
+
+    function resetPreview() {
+        if (activeObjectUrl) {
+            URL.revokeObjectURL(activeObjectUrl);
+            activeObjectUrl = null;
+        }
+        preview.textContent = '📷';
+        preview.classList.remove('photo-placeholder--image');
+    }
+
+    input.addEventListener('change', function (event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) {
+            resetPreview();
+            return;
+        }
+
+        resetPreview();
+        activeObjectUrl = URL.createObjectURL(file);
+        preview.innerHTML = '<img src="' + activeObjectUrl + '" alt="Vista previa de foto de perfil">';
+        preview.classList.add('photo-placeholder--image');
+    });
+})();
+</script>
 </body>
 </html>
