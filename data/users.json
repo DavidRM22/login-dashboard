@@ -350,5 +350,20 @@
         "password": "$2y$10$vFf\/aaUefbEnz6RTi..Ki.iQRuPrW6Dy6Apd8gHTZ\/5IGWORpWBwG",
         "must_change_password": false,
         "created_at": "2026-02-27 20:57:26"
+    },
+    {
+        "id": "69a2561595417",
+        "name": "Nagi Seishiro",
+        "email": "seishironagi@gmail.com",
+        "phone": "963852741",
+        "type": "Desarrollador",
+        "department": "Tecnologia de la Informacion",
+        "position": "Instructor Junior",
+        "hired_at": "2026-02-27",
+        "status": "Activo",
+        "photo_url": "uploads\/profiles\/profile_69a2561594c740.36627592.jpg",
+        "password": "$2y$10$38zLudpU85w3m1JLa9Tvs.yyyZehp5vmkMoa4\/vaa4wNX53JEV4p2",
+        "must_change_password": true,
+        "created_at": "2026-02-27 21:42:29"
     }
 ]
