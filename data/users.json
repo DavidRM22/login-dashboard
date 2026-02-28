@@ -1,10 +1,16 @@
 [
     {
-        "name": "Test",
-        "email": "test@test.com",
+        "name": "sol",
+        "email": "sol@test.com",
         "password": "123456",
         "id": "6995e4fe51afa",
-        "created_at": "2026-02-18 11:12:46"
+        "created_at": "2026-02-18 11:12:46",
+        "phone": "987654321",
+        "type": "Administrador",
+        "department": "Administracion",
+        "position": "Coordinador de Contenidos",
+        "hired_at": "2026-02-25",
+        "status": "Inactivo"
     },
     {
         "name": "Test",
@@ -119,11 +125,17 @@
         "created_at": "2026-02-24 21:25:38"
     },
     {
-        "name": "gheta",
-        "email": "gheta123@hotmail.com",
+        "name": "sol",
+        "email": "sol123@hotmail.com",
         "password": "$2y$10$ZyiYgToRJ2yfUi1tXhy5Fe8lKHzwiBF2LMW05txdWT5t05JOglpDq",
         "id": "699eff3e8418d",
-        "created_at": "2026-02-25 08:55:10"
+        "created_at": "2026-02-25 08:55:10",
+        "phone": "987654321",
+        "type": "Administrador",
+        "department": "Finanzas",
+        "position": "Coordinador de Contenidos",
+        "hired_at": "2026-02-27",
+        "status": "Activo"
     },
     {
         "id": "69a1425d1dd8a",
