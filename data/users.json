@@ -256,5 +256,17 @@
         "hired_at": "2026-02-25",
         "status": "Activo",
         "created_at": "2026-02-27 02:49:14"
+    },
+    {
+        "id": "69a22d24b727d",
+        "name": "juan",
+        "email": "pruebascooler@gmail.com",
+        "phone": "912345678",
+        "type": "Desarrollador",
+        "department": "Tecnologia de la Informacion",
+        "position": "Instructor Senior",
+        "hired_at": "2026-02-27",
+        "status": "Activo",
+        "created_at": "2026-02-27 18:47:48"
     }
 ]
