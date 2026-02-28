@@ -1,798 +1,100 @@
-diff --git a/app/controllers/AuthController.php b/app/controllers/AuthController.php
-index a873f8ac9d849cb00f12edbcbf2f0f35237b9e81..5b7cc5f773205894d939f039577b08a9b0a7ac9e 100644
---- a/app/controllers/AuthController.php
-+++ b/app/controllers/AuthController.php
-@@ -1,85 +1,170 @@
- <?php
- 
- require_once MODEL_PATH . '/AuditModel.php';
- require_once MODEL_PATH . '/UserModel.php';
- require_once MODEL_PATH . '/OTPModel.php';
- require_once APP_PATH . '/services/MailerService.php';
- 
- class AuthController
- {
-+    private function isPasswordValidForUser($plainPassword, $storedPassword)
-+    {
-+        if ($storedPassword === null || $storedPassword === '') {
-+            return false;
-+        }
-+
-+        if (password_verify($plainPassword, $storedPassword)) {
-+            return true;
-+        }
-+
-+        return hash_equals((string)$storedPassword, (string)$plainPassword);
-+    }
-+
-+    private function passwordRules($password)
-+    {
-+        return [
-+            'length' => strlen($password) >= 8,
-+            'lower' => (bool)preg_match('/[a-z]/', $password),
-+            'upper' => (bool)preg_match('/[A-Z]/', $password),
-+            'number' => (bool)preg_match('/[0-9]/', $password),
-+            'special' => (bool)preg_match('/[^A-Za-z0-9]/', $password),
-+        ];
-+    }
-+
-     public function login()
-     {
-         require VIEW_PATH . '/login.php';
-     }
- 
-     public function doLogin()
-     {
--        $email = $_POST['email'];
--        $password = $_POST['password'];
-+        $email = trim($_POST['email'] ?? '');
-+        $password = $_POST['password'] ?? '';
- 
-         $userModel = new UserModel();
-         $user = $userModel->findByEmail($email);
- 
--        if (!$user || !password_verify($password, $user['password'])) {
--            echo "❌ Credenciales incorrectas<br>";
--            echo "<a href='" . route('auth', 'login') . "'>Volver</a>";
--            return;
-+        if (!$user || !$this->isPasswordValidForUser($password, $user['password'] ?? null)) {
-+            $_SESSION['login_error'] = 'Credenciales incorrectas.';
-+            redirect(route('auth', 'login'));
-         }
- 
-         $otpModel = new OTPModel();
-         $otpCode = $otpModel->generate($email);
- 
-         $mailer = new MailerService();
-         $otpSent = $mailer->sendOTP($email, (string)$otpCode);
- 
-         if (!$otpSent) {
--            echo "❌ No se pudo enviar el OTP al correo. Intenta nuevamente.<br>";
--            echo "<a href='" . route('auth', 'login') . "'>Volver</a>";
-+            $_SESSION['login_error'] = 'No se pudo enviar el OTP al correo. Intenta nuevamente.';
- 
-             $audit = new AuditModel();
-             $audit->log('EVENT_FAILED_OTP_DELIVERY', $email, 'Error enviando OTP por correo en login');
--            return;
-+            redirect(route('auth', 'login'));
-         }
- 
-         $_SESSION['otp_email'] = $email;
- 
-         $audit = new AuditModel();
-         $audit->log('EVENT_LOGIN_ATTEMPT', $email, 'Credenciales válidas, OTP enviado por correo');
- 
-         redirect(route('auth', 'verify'));
-     }
- 
-     public function verify()
-     {
-         require VIEW_PATH . '/verify.php';
-     }
- 
-     public function verifyOTP()
-     {
-         $code = $_POST['code'];
-         $email = $_SESSION['otp_email'] ?? null;
- 
-         if (!$email) {
-             die("Sesión expirada. Inicie sesión nuevamente.");
-         }
- 
-         $otpModel = new OTPModel();
-         $isValid = $otpModel->verify($email, $code);
- 
-         if (!$isValid) {
-             echo "❌ Código incorrecto o expirado<br>";
-             echo "<a href='" . route('auth', 'verify') . "'>Intentar de nuevo</a>";
-             $audit = new AuditModel();
-             $audit->log('EVENT_FAILED_OTP', $email, 'Código incorrecto o expirado');
-             return;
-         }
- 
-         $audit = new AuditModel();
-         $audit->log('EVENT_LOGIN', $email, 'Login exitoso');
- 
-         $_SESSION['user_id'] = $email;
-         unset($_SESSION['otp_email']);
- 
-+        $userModel = new UserModel();
-+        $user = $userModel->findByEmail($email);
-+
-+        if (!empty($user['must_change_password'])) {
-+            redirect(route('auth', 'changePasswordRequired'));
-+        }
-+
-+        redirect(route('dashboard', 'index'));
-+    }
-+
-+    public function changePasswordRequired()
-+    {
-+        authRequired();
-+
-+        $email = $_SESSION['user_id'];
-+        $userModel = new UserModel();
-+        $user = $userModel->findByEmail($email);
-+
-+        if (empty($user['must_change_password'])) {
-+            redirect(route('dashboard', 'index'));
-+        }
-+
-+        require VIEW_PATH . '/force_change_password.php';
-+    }
-+
-+    public function updateMandatoryPassword()
-+    {
-+        authRequired();
-+
-+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-+            redirect(route('auth', 'changePasswordRequired'));
-+        }
-+
-+        $email = $_SESSION['user_id'];
-+        $newPassword = (string)($_POST['new_password'] ?? '');
-+        $confirmPassword = (string)($_POST['confirm_password'] ?? '');
-+
-+        $rules = $this->passwordRules($newPassword);
-+        $allRulesPassed = !in_array(false, $rules, true);
-+
-+        if (!$allRulesPassed) {
-+            $_SESSION['password_change_error'] = 'La nueva contraseña no cumple con todos los requisitos de seguridad.';
-+            redirect(route('auth', 'changePasswordRequired'));
-+        }
-+
-+        if ($newPassword !== $confirmPassword) {
-+            $_SESSION['password_change_error'] = 'La confirmación de contraseña no coincide.';
-+            redirect(route('auth', 'changePasswordRequired'));
-+        }
-+
-+        $userModel = new UserModel();
-+        $updated = $userModel->updatePasswordByEmail($email, $newPassword);
-+
-+        if (!$updated) {
-+            $_SESSION['password_change_error'] = 'No se pudo actualizar la contraseña. Intenta nuevamente.';
-+            redirect(route('auth', 'changePasswordRequired'));
-+        }
-+
-+        $audit = new AuditModel();
-+        $audit->log('EVENT_PASSWORD_CHANGED', $email, 'Cambio obligatorio de contraseña completado');
-+
-+        $_SESSION['password_change_success'] = 'Contraseña actualizada correctamente.';
-+
-         redirect(route('dashboard', 'index'));
-     }
- }
-diff --git a/app/controllers/DashboardController.php b/app/controllers/DashboardController.php
-index 367be6c5b8816b8d3f3822295c7e8ec19e4e4e15..f2ad92622c115c940f169f0f2c577c61f6a24ebb 100644
---- a/app/controllers/DashboardController.php
-+++ b/app/controllers/DashboardController.php
-@@ -1,103 +1,142 @@
- <?php
- 
- require_once MODEL_PATH . '/UserModel.php';
- require_once MODEL_PATH . '/AuditModel.php';
- 
- class DashboardController
- {
-+    private function enforcePasswordUpdated()
-+    {
-+        $email = $_SESSION['user_id'] ?? null;
-+        if (!$email) {
-+            return;
-+        }
-+
-+        $userModel = new UserModel();
-+        $user = $userModel->findByEmail($email);
-+
-+        if (!empty($user['must_change_password'])) {
-+            redirect(route('auth', 'changePasswordRequired'));
-+        }
-+    }
-+
-+    private function generateTemporaryPassword()
-+    {
-+        $lower = 'abcdefghijklmnopqrstuvwxyz';
-+        $upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-+        $digits = '0123456789';
-+        $special = '!@#$%^&*';
-+
-+        $requiredChars = [
-+            $lower[random_int(0, strlen($lower) - 1)],
-+            $upper[random_int(0, strlen($upper) - 1)],
-+            $digits[random_int(0, strlen($digits) - 1)],
-+            $special[random_int(0, strlen($special) - 1)],
-+        ];
-+
-+        $all = $lower . $upper . $digits . $special;
-+        for ($i = 0; $i < 4; $i++) {
-+            $requiredChars[] = $all[random_int(0, strlen($all) - 1)];
-+        }
-+
-+        shuffle($requiredChars);
-+
-+        return 'TechSkills' . implode('', $requiredChars);
-+    }
-+
-     public function index()
-     {
--        // 1. Proteger ruta
-         authRequired();
-+        $this->enforcePasswordUpdated();
- 
--        // 2. Obtener usuario
-         $email = $_SESSION['user_id'];
- 
-         $userModel = new UserModel();
-         $user = $userModel->findByEmail($email);
--        // obtener todos los empleados para listarlos en el dashboard
-         $allUsersRaw = json_decode(file_get_contents(DATA_PATH . '/users.json'), true);
- 
--        // leer filtros desde GET
-         $search = trim($_GET['search'] ?? '');
-         $typeFilter = trim($_GET['type'] ?? '');
-         $statusFilter = trim($_GET['status'] ?? '');
- 
--        // aplicar filtros (si existen)
-         $allUsers = array_values(array_filter($allUsersRaw, function ($u) use ($search, $typeFilter, $statusFilter) {
--            // búsqueda libre sobre nombre, email y puesto
-             if ($search !== '') {
-                 $hay = false;
-                 $needle = mb_strtolower($search);
-                 foreach (['name', 'email', 'position'] as $field) {
-                     if (!empty($u[$field]) && mb_strpos(mb_strtolower($u[$field]), $needle) !== false) {
-                         $hay = true;
-                         break;
-                     }
-                 }
-                 if (!$hay) return false;
-             }
- 
-             if ($typeFilter !== '' && (!isset($u['type']) || $u['type'] !== $typeFilter)) {
-                 return false;
-             }
- 
-             if ($statusFilter !== '' && (!isset($u['status']) || $u['status'] !== $statusFilter)) {
-                 return false;
-             }
- 
-             return true;
-         }));
- 
--        // 3. Cargar vista
-         require VIEW_PATH . '/dashboard.php';
-     }
- 
- 
-     public function addEmployee()
-     {
-         authRequired();
-+        $this->enforcePasswordUpdated();
-         require VIEW_PATH . '/add_employee.php';
-     }
- 
-     public function saveEmployee()
-     {
-         authRequired();
-+        $this->enforcePasswordUpdated();
- 
-         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-             redirect(route('dashboard', 'index'));
-         }
- 
-         $payload = [];
-         $payload['full_name'] = trim($_POST['full_name'] ?? '');
-         $payload['email'] = trim($_POST['email'] ?? '');
-         $payload['phone'] = trim($_POST['phone'] ?? '');
-         $payload['type'] = trim($_POST['type'] ?? '');
-         $payload['department'] = trim($_POST['department'] ?? '');
-         $payload['position'] = trim($_POST['position'] ?? '');
-         $payload['hired_at'] = trim($_POST['hired_at'] ?? '');
-         $payload['status'] = trim($_POST['status'] ?? '');
-+        $payload['password'] = $this->generateTemporaryPassword();
-+        $payload['must_change_password'] = true;
- 
-         $userModel = new UserModel();
-         $userModel->create($payload);
- 
--        redirect(route('dashboard', 'index'));
-+        $_SESSION['employee_temp_password_message'] = 'Empleado creado exitosamente. Contraseña temporal: ' . $payload['password'] . '. Guarde esta información.';
-+
-+        redirect(route('dashboard', 'addEmployee'));
-     }
- 
-     public function logout()
-     {
-         session_destroy();
-         redirect(route('auth', 'login'));
-     }
- 
-     public function audit()
-     {
--    authRequired();
-+        authRequired();
-+        $this->enforcePasswordUpdated();
- 
--    $auditModel = new AuditModel();
--    $logs = json_decode(file_get_contents(DATA_PATH . '/audit.json'), true);
-+        $auditModel = new AuditModel();
-+        $logs = json_decode(file_get_contents(DATA_PATH . '/audit.json'), true);
- 
--    require VIEW_PATH . '/audit.php';
-+        require VIEW_PATH . '/audit.php';
-     }
--
- }
-diff --git a/app/models/UserModel.php b/app/models/UserModel.php
-index 39b3e492455bc9e16f753e40188b3ba8e93626e8..38fbfc7e8ae89e9c1f1a3710a6d58a58e9c24656 100644
---- a/app/models/UserModel.php
-+++ b/app/models/UserModel.php
-@@ -1,76 +1,105 @@
- <?php
- 
- require_once MODEL_PATH . '/database.php';
- 
- class UserModel
- {
-     private $jsonFile;
- 
-     public function __construct()
-     {
-         $this->jsonFile = DATA_PATH . '/users.json';
- 
-         if (!file_exists($this->jsonFile)) {
-             file_put_contents($this->jsonFile, json_encode([]));
-         }
-     }
- 
-     public function create($data)
-     {
-         // --- GUARDAR EN JSON ---
-         $users = json_decode(file_get_contents($this->jsonFile), true);
-         $record = [];
- 
-+        $rawPassword = (string)($data['password'] ?? '');
-+        $mustChangePassword = (bool)($data['must_change_password'] ?? false);
-+
-         $record['id'] = uniqid();
-         $record['name'] = isset($data['full_name']) ? $data['full_name'] : ($data['name'] ?? '');
-         $record['email'] = $data['email'] ?? '';
-         $record['phone'] = $data['phone'] ?? '';
-         $record['type'] = $data['type'] ?? '';
-         $record['department'] = $data['department'] ?? '';
-         $record['position'] = $data['position'] ?? '';
-         $record['hired_at'] = $data['hired_at'] ?? '';
-         $record['status'] = $data['status'] ?? '';
-+        if ($rawPassword !== '') {
-+            $record['password'] = password_hash($rawPassword, PASSWORD_DEFAULT);
-+            $record['must_change_password'] = $mustChangePassword;
-+        }
-         $record['created_at'] = date('Y-m-d H:i:s');
- 
-         $users[] = $record;
- 
-         file_put_contents($this->jsonFile, json_encode($users, JSON_PRETTY_PRINT));
- 
-         // Intentar guardar en MySQL si la tabla existe, pero no romper si hay error
-         try {
-             $db = Database::connect();
- 
-             $sql = "INSERT INTO users (id, name, email, phone, type, department, position, hired_at, status, created_at)
-                     VALUES (:id, :name, :email, :phone, :type, :department, :position, :hired_at, :status, :created_at)";
- 
-             $stmt = $db->prepare($sql);
-             $stmt->execute([
-                 ':id' => $record['id'],
-                 ':name' => $record['name'],
-                 ':email' => $record['email'],
-                 ':phone' => $record['phone'],
-                 ':type' => $record['type'],
-                 ':department' => $record['department'],
-                 ':position' => $record['position'],
-                 ':hired_at' => $record['hired_at'],
-                 ':status' => $record['status'],
-                 ':created_at' => $record['created_at']
-             ]);
-         } catch (Exception $e) {
-             // registrar error en auditoría o ignorar para no romper flujo
-         }
-     }
- 
-     public function findByEmail($email)
-     {
-         $users = json_decode(file_get_contents($this->jsonFile), true);
- 
-         foreach ($users as $user) {
-             if ($user['email'] === $email) {
-                 return $user;
-             }
-         }
- 
-         return null;
-     }
-+
-+    public function updatePasswordByEmail($email, $newPassword)
-+    {
-+        $users = json_decode(file_get_contents($this->jsonFile), true);
-+        $updated = false;
-+
-+        foreach ($users as &$user) {
-+            if (($user['email'] ?? null) === $email) {
-+                $user['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
-+                $user['must_change_password'] = false;
-+                $updated = true;
-+                break;
-+            }
-+        }
-+        unset($user);
-+
-+        if ($updated) {
-+            file_put_contents($this->jsonFile, json_encode($users, JSON_PRETTY_PRINT));
-+        }
-+
-+        return $updated;
-+    }
- }
-diff --git a/app/views/add_employee.php b/app/views/add_employee.php
-index 5dab77ea2b858486fb1cb296f67369bf5e7ce8f0..aae90057fc8f30aba8d85264d97815adc625d117 100644
---- a/app/views/add_employee.php
-+++ b/app/views/add_employee.php
-@@ -1,45 +1,53 @@
+diff --git a/app/views/audit.php b/app/views/audit.php
+index 48064ba83e416e3434e5be2337c2ed3d6a4d1e02..569f653a2675336a8781eac1d5ac3191aaf67535 100644
+--- a/app/views/audit.php
++++ b/app/views/audit.php
+@@ -1,48 +1,64 @@
  <!DOCTYPE html>
  <html lang="es">
  <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Agregar nuevo empleado</title>
+     <title>Auditoría del Sistema</title>
      <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
-     <link rel="stylesheet" href="<?= asset('dashboard.css') ?>">
++    <link rel="stylesheet" href="<?= asset('dashboard.css') ?>">
      <script src="<?= asset('theme.js') ?>" defer></script>
  </head>
- <body class="dashboard-body">
+-<body>
++<body class="dashboard-body">
  <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
- <div class="employee-shell">
-     <section class="employee-modal">
-         <div class="employee-modal__header">
-             <h1>Agregar Nuevo Empleado</h1>
-             <a class="employee-modal__close" href="<?= route('dashboard', 'index') ?>" aria-label="Cerrar">×</a>
-         </div>
+-<div class="page-shell">
+-    <section class="panel panel--wide">
+-        <h1>Auditoría del sistema</h1>
+-        <p class="subtitle">Registro de eventos y actividad reciente.</p>
++<div class="dashboard-layout">
++    <aside class="dashboard-sidebar">
++        <h3>Dashboard</h3>
++        <p>Panel de Administración</p>
  
-         <form class="employee-form" method="post" action="<?= route('dashboard', 'saveEmployee') ?>">
+-        <div class="table-wrap">
+-            <table class="audit-table">
+-                <thead>
+-                <tr>
+-                    <th>Evento</th>
+-                    <th>Email</th>
+-                    <th>IP</th>
+-                    <th>Fecha</th>
+-                    <th>Detalles</th>
+-                </tr>
+-                </thead>
+-                <tbody>
+-                <?php foreach ($logs as $log): ?>
++        <span class="sidebar-section">PANEL</span>
++        <a class="sidebar-link" href="<?= route('dashboard', 'index') ?>">Inicio</a>
++        <a class="sidebar-link active" href="<?= route('dashboard', 'audit') ?>">Auditoría</a>
 +
-+        <?php if (!empty($_SESSION['employee_temp_password_message'])): ?>
-+            <div class="alert alert-success alert-inline">
-+                ✅ <?= htmlspecialchars($_SESSION['employee_temp_password_message']) ?>
++        <span class="sidebar-section">GENERAL</span>
++        <a class="sidebar-link" href="<?= route('dashboard', 'addEmployee') ?>">Agregar empleado</a>
++        <a class="sidebar-link" href="<?= route('dashboard', 'logout') ?>">Cerrar sesión</a>
++    </aside>
++
++    <main class="dashboard-main">
++        <section class="panel panel--wide hr-panel hr-panel--fullscreen">
++            <h1>Auditoría del sistema</h1>
++            <p class="subtitle">Registro de eventos y actividad reciente.</p>
++
++            <div class="table-wrap table-wrap--dashboard">
++                <table class="audit-table dashboard-table">
++                    <thead>
+                     <tr>
+-                        <td><?= $log['event'] ?></td>
+-                        <td><?= $log['email'] ?></td>
+-                        <td><?= $log['ip'] ?></td>
+-                        <td><?= $log['created_at'] ?></td>
+-                        <td><?= $log['details'] ?></td>
++                        <th>Evento</th>
++                        <th>Email</th>
++                        <th>IP</th>
++                        <th>Fecha</th>
++                        <th>Detalles</th>
+                     </tr>
+-                <?php endforeach; ?>
+-                </tbody>
+-            </table>
+-        </div>
++                    </thead>
++                    <tbody>
++                    <?php foreach ($logs as $log): ?>
++                        <tr>
++                            <td><?= htmlspecialchars($log['event']) ?></td>
++                            <td><?= htmlspecialchars($log['email']) ?></td>
++                            <td><?= htmlspecialchars($log['ip']) ?></td>
++                            <td><?= htmlspecialchars($log['created_at']) ?></td>
++                            <td><?= htmlspecialchars($log['details']) ?></td>
++                        </tr>
++                    <?php endforeach; ?>
++                    </tbody>
++                </table>
 +            </div>
-+            <?php unset($_SESSION['employee_temp_password_message']); ?>
-+        <?php endif; ?>
-+
-             <h2>Información del Usuario</h2>
-             <div class="employee-grid employee-grid--two">
-                 <div class="field">
-                     <label for="full_name">Nombre Completo *</label>
-                     <input id="full_name" name="full_name" type="text" placeholder="Ej: Juan Pérez García" required>
-                 </div>
  
-                 <div class="field">
-                     <label for="email">Correo Electrónico *</label>
-                     <input id="email" name="email" type="email" placeholder="juan.perez@empresa.com" required>
-                 </div>
- 
-                 <div class="field">
-                     <label for="phone">Teléfono</label>
-                     <input id="phone" name="phone" type="text" placeholder="+51 999 999 999">
-                 </div>
-             </div>
- 
-             <h2>Foto de Perfil</h2>
-             <div class="photo-row">
-                 <div class="photo-placeholder">📷</div>
-                 <div>
-                     <button class="btn-secondary btn-inline" type="button">Capturar Foto con Reconocimiento Facial</button>
-                     <p>Opcional: Captura la foto del empleado con verificación biométrica</p>
-                 </div>
-diff --git a/app/views/force_change_password.php b/app/views/force_change_password.php
-new file mode 100644
-index 0000000000000000000000000000000000000000..bba1781ec06cb72a4a808c7146aab9679d9fd962
---- /dev/null
-+++ b/app/views/force_change_password.php
-@@ -0,0 +1,97 @@
-+<!DOCTYPE html>
-+<html lang="es">
-+<head>
-+    <meta charset="UTF-8">
-+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-+    <title>Cambio de contraseña obligatorio</title>
-+    <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
-+    <script src="<?= asset('theme.js') ?>" defer></script>
-+</head>
-+<body>
-+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
-+<div class="page-shell">
-+    <section class="panel">
-+        <h1>🔒 Cambio de Contraseña Obligatorio</h1>
-+        <p class="subtitle">Por seguridad, debes cambiar tu contraseña temporal antes de continuar.</p>
-+
-+        <div class="password-info-box">
-+            <strong>ℹ️ Tu cuenta fue creada con una contraseña temporal.</strong>
-+            <p>Por favor, establece una contraseña nueva y segura.</p>
-+        </div>
-+
-+        <?php if (!empty($_SESSION['password_change_error'])): ?>
-+            <div class="alert alert-error"><?= htmlspecialchars($_SESSION['password_change_error']) ?></div>
-+            <?php unset($_SESSION['password_change_error']); ?>
-+        <?php endif; ?>
-+
-+        <form class="form-grid" method="POST" action="<?= route('auth', 'updateMandatoryPassword') ?>" id="mandatory-password-form" novalidate>
-+            <div class="field">
-+                <label for="email">Correo Electrónico</label>
-+                <input id="email" type="email" value="<?= htmlspecialchars($_SESSION['user_id'] ?? '') ?>" readonly>
+-        <div class="links-row">
+-            <a href="<?= route('dashboard', 'index') ?>">Volver al panel</a>
+-        </div>
+-    </section>
++            <div class="links-row">
++                <a href="<?= route('dashboard', 'index') ?>">Volver al panel</a>
 +            </div>
-+
-+            <div class="field">
-+                <label for="new_password">Nueva Contraseña</label>
-+                <input id="new_password" type="password" name="new_password" required>
-+            </div>
-+
-+            <div class="password-strength">
-+                <div class="password-strength__label">Requisitos de contraseña:</div>
-+                <ul class="requirements" id="password-requirements">
-+                    <li data-rule="length">Al menos 8 caracteres</li>
-+                    <li data-rule="lower">Una letra minúscula</li>
-+                    <li data-rule="upper">Una letra mayúscula</li>
-+                    <li data-rule="number">Un número</li>
-+                    <li data-rule="special">Un carácter especial (!@#$%^&*)</li>
-+                </ul>
-+            </div>
-+
-+            <div class="field">
-+                <label for="confirm_password">Confirmar Contraseña</label>
-+                <input id="confirm_password" type="password" name="confirm_password" required>
-+            </div>
-+
-+            <button class="btn-primary" id="submit-password-change" type="submit" disabled>Cambiar Contraseña</button>
-+        </form>
-+    </section>
-+</div>
-+
-+<script>
-+(function () {
-+    const passwordInput = document.getElementById('new_password');
-+    const confirmInput = document.getElementById('confirm_password');
-+    const submitButton = document.getElementById('submit-password-change');
-+    const requirementItems = document.querySelectorAll('#password-requirements li');
-+
-+    const validators = {
-+        length: (value) => value.length >= 8,
-+        lower: (value) => /[a-z]/.test(value),
-+        upper: (value) => /[A-Z]/.test(value),
-+        number: (value) => /[0-9]/.test(value),
-+        special: (value) => /[^A-Za-z0-9]/.test(value),
-+    };
-+
-+    function validate() {
-+        const value = passwordInput.value;
-+        let allValid = true;
-+
-+        requirementItems.forEach((item) => {
-+            const rule = item.dataset.rule;
-+            const passed = validators[rule](value);
-+            item.classList.toggle('is-valid', passed);
-+            if (!passed) {
-+                allValid = false;
-+            }
-+        });
-+
-+        const confirmMatches = value !== '' && value === confirmInput.value;
-+        submitButton.disabled = !(allValid && confirmMatches);
-+    }
-+
-+    passwordInput.addEventListener('input', validate);
-+    confirmInput.addEventListener('input', validate);
-+    validate();
-+})();
-+</script>
-+</body>
-+</html>
-diff --git a/app/views/login.php b/app/views/login.php
-index e1c00f576d63ed734fd733bfff45093557d671a8..49b1564697792950463d6a3ca803cf0e52706ab5 100644
---- a/app/views/login.php
-+++ b/app/views/login.php
-@@ -1,34 +1,44 @@
- <!DOCTYPE html>
- <html lang="es">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Login</title>
-     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
-     <script src="<?= asset('theme.js') ?>" defer></script>
- </head>
- <body>
- <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
- <div class="page-shell">
-     <section class="panel">
-         <h1>Bienvenido de vuelta</h1>
-         <p class="subtitle">Ingresa tus credenciales para continuar.</p>
- 
-+        <?php if (!empty($_SESSION['login_error'])): ?>
-+            <div class="alert alert-error"><?= htmlspecialchars($_SESSION['login_error']) ?></div>
-+            <?php unset($_SESSION['login_error']); ?>
-+        <?php endif; ?>
-+
-+        <?php if (!empty($_SESSION['password_change_success'])): ?>
-+            <div class="alert alert-success"><?= htmlspecialchars($_SESSION['password_change_success']) ?></div>
-+            <?php unset($_SESSION['password_change_success']); ?>
-+        <?php endif; ?>
-+
-         <form class="form-grid" method="POST" action="<?= route('auth', 'doLogin') ?>">
-             <div class="field">
-                 <label for="email">Correo electrónico</label>
-                 <input id="email" type="email" name="email" placeholder="usuario@empresa.com" required>
-             </div>
- 
-             <div class="field">
-                 <label for="password">Contraseña</label>
-                 <input id="password" type="password" name="password" placeholder="••••••••" required>
-             </div>
- 
-             <button class="btn-primary" type="submit">Iniciar sesión</button>
-         </form>
- 
-     </section>
++        </section>
++    </main>
  </div>
  </body>
  </html>
-diff --git a/public/estilos.css b/public/estilos.css
-index 0db6dabd35a8da3f7839dfda052fd3760d936095..5ce7c2cee6e91d39584fca4c135ed7c3c36f4e77 100644
---- a/public/estilos.css
-+++ b/public/estilos.css
-@@ -596,25 +596,129 @@ body[data-theme='light'] .links-row a {
-     color: #2f4970;
- }
- 
- body[data-theme='light'] input,
- body[data-theme='light'] select,
- body[data-theme='light'] textarea {
-     color: #2d3f5b;
-     border-color: rgba(93, 126, 198, 0.35);
- }
- 
- body[data-theme='light'] .btn-secondary {
-     color: #2e5689;
-     border-color: rgba(74, 112, 190, 0.35);
-     background: rgba(218, 232, 255, 0.75);
- }
- 
- body[data-theme='light'] .info-list li,
- body[data-theme='light'] .audit-table th,
- body[data-theme='light'] .audit-table td,
- body[data-theme='light'] .stat-card,
- body[data-theme='light'] .gallery-grid,
- body[data-theme='light'] .profile-card {
-     background: rgba(240, 246, 255, 0.86);
-     border-color: rgba(95, 126, 192, 0.24);
- }
-+
-+.alert {
-+    border-radius: 12px;
-+    padding: 12px 14px;
-+    margin-bottom: 14px;
-+    border: 1px solid transparent;
-+    font-weight: 600;
-+}
-+
-+.alert-success {
-+    background: rgba(62, 184, 117, 0.16);
-+    border-color: rgba(79, 199, 132, 0.35);
-+    color: #7ce3ac;
-+}
-+
-+.alert-error {
-+    background: rgba(216, 76, 103, 0.16);
-+    border-color: rgba(238, 99, 125, 0.4);
-+    color: #ff9fb1;
-+}
-+
-+.alert-inline {
-+    margin-bottom: 18px;
-+}
-+
-+.password-info-box {
-+    border: 1px solid rgba(127, 152, 212, 0.3);
-+    border-radius: 12px;
-+    padding: 12px 14px;
-+    background: rgba(28, 45, 78, 0.6);
-+    margin-bottom: 16px;
-+}
-+
-+.password-info-box p {
-+    margin: 6px 0 0;
-+    color: var(--text-muted);
-+}
-+
-+.password-strength {
-+    margin-top: -8px;
-+}
-+
-+.password-strength__label {
-+    font-weight: 700;
-+    margin-bottom: 8px;
-+    color: #c5d6f6;
-+}
-+
-+.requirements {
-+    list-style: none;
-+    padding: 0;
-+    margin: 0;
-+    display: grid;
-+    gap: 6px;
-+}
-+
-+.requirements li {
-+    color: #9faece;
-+    display: flex;
-+    align-items: center;
-+    gap: 8px;
-+}
-+
-+.requirements li::before {
-+    content: '○';
-+    font-weight: 700;
-+}
-+
-+.requirements li.is-valid {
-+    color: #50d485;
-+}
-+
-+.requirements li.is-valid::before {
-+    content: '✓';
-+}
-+
-+body[data-theme='light'] .alert-success {
-+    background: rgba(82, 190, 131, 0.18);
-+    border-color: rgba(69, 164, 112, 0.4);
-+    color: #1e8754;
-+}
-+
-+body[data-theme='light'] .alert-error {
-+    background: rgba(235, 94, 120, 0.16);
-+    border-color: rgba(205, 72, 96, 0.35);
-+    color: #b42f4c;
-+}
-+
-+body[data-theme='light'] .password-info-box {
-+    background: rgba(237, 244, 255, 0.88);
-+    border-color: rgba(93, 126, 198, 0.3);
-+}
-+
-+body[data-theme='light'] .password-strength__label {
-+    color: #415f8d;
-+}
-+
-+body[data-theme='light'] .requirements li {
-+    color: #5f7395;
-+}
-+
-+body[data-theme='light'] .requirements li.is-valid {
-+    color: #2e9962;
-+}
