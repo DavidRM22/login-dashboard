@@ -200,8 +200,8 @@ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
                                 <td><?= htmlspecialchars($u['department'] ?? '') ?></td>
                                 <td><span class="status-chip"><?= htmlspecialchars($u['status'] ?? '') ?></span></td>
                                 <td>
-                                    <a class="table-link" href="<?= route('dashboard', 'audit') ?>">Ver</a>
-                                    <a class="table-link" href="<?= route('dashboard', 'addEmployee') ?>">Editar</a>
+                                    <a class="table-link" href="<?= route('dashboard', 'viewEmployee') ?>&id=<?= urlencode($u['id'] ?? '') ?>">Ver</a>
+                                    <a class="table-link" href="<?= route('dashboard', 'editEmployee') ?>&id=<?= urlencode($u['id'] ?? '') ?>">Editar</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

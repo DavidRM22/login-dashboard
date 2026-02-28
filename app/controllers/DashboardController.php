@@ -100,36 +100,48 @@ class DashboardController
 
         $userModel = new UserModel();
         $user = $userModel->findByEmail($email);
-        $allUsersRaw = json_decode(file_get_contents(DATA_PATH . '/users.json'), true);
+        
+        // obtener todos los empleados para listarlos en el dashboard
+        $usersFile = DATA_PATH . '/users.json';
+        $allUsersRaw = file_exists($usersFile) ? json_decode(file_get_contents($usersFile), true) ?? [] : [];
 
+        // leer filtros desde GET
         $search = trim($_GET['search'] ?? '');
         $typeFilter = trim($_GET['type'] ?? '');
         $statusFilter = trim($_GET['status'] ?? '');
 
-        $allUsers = array_values(array_filter($allUsersRaw, function ($u) use ($search, $typeFilter, $statusFilter) {
-            if ($search !== '') {
-                $hay = false;
+        // aplicar filtros (si existen)
+        $allUsers = [];
+        foreach ($allUsersRaw as $u) {
+            // búsqueda libre sobre nombre, email y puesto
+            if (!empty($search)) {
                 $needle = mb_strtolower($search);
+                $found = false;
                 foreach (['name', 'email', 'position'] as $field) {
                     if (!empty($u[$field]) && mb_strpos(mb_strtolower($u[$field]), $needle) !== false) {
-                        $hay = true;
+                        $found = true;
                         break;
                     }
                 }
-                if (!$hay) return false;
+                if (!$found) continue;
             }
 
-            if ($typeFilter !== '' && (!isset($u['type']) || $u['type'] !== $typeFilter)) {
-                return false;
+            // filtro por tipo
+            if (!empty($typeFilter)) {
+                $uType = trim($u['type'] ?? '');
+                if ($uType !== $typeFilter) continue;
             }
 
-            if ($statusFilter !== '' && (!isset($u['status']) || $u['status'] !== $statusFilter)) {
-                return false;
+            // filtro por estado
+            if (!empty($statusFilter)) {
+                $uStatus = trim($u['status'] ?? '');
+                if ($uStatus !== $statusFilter) continue;
             }
 
-            return true;
-        }));
+            $allUsers[] = $u;
+        }
 
+        // 3. Cargar vista
         require VIEW_PATH . '/dashboard.php';
     }
 
@@ -192,5 +204,92 @@ class DashboardController
         $logs = json_decode(file_get_contents(DATA_PATH . '/audit.json'), true);
 
         require VIEW_PATH . '/audit.php';
+    }
+
+    public function viewEmployee()
+    {
+        authRequired();
+        $this->enforcePasswordUpdated();
+
+        $id = trim($_GET['id'] ?? '');
+        
+        if (empty($id)) {
+            redirect(route('dashboard', 'index'));
+        }
+
+        $usersFile = DATA_PATH . '/users.json';
+        if (!file_exists($usersFile)) {
+            redirect(route('dashboard', 'index'));
+        }
+
+        $allUsers = json_decode(file_get_contents($usersFile), true) ?? [];
+        $user = null;
+
+        foreach ($allUsers as $u) {
+            if (!empty($u['id']) && trim($u['id']) === $id) {
+                $user = $u;
+                break;
+            }
+        }
+
+        if (!$user) {
+            redirect(route('dashboard', 'index'));
+        }
+
+        require VIEW_PATH . '/employee_detail.php';
+    }
+
+    public function editEmployee()
+    {
+        authRequired();
+        $this->enforcePasswordUpdated();
+
+        $id = trim($_GET['id'] ?? '');
+        
+        if (empty($id)) {
+            redirect(route('dashboard', 'index'));
+        }
+
+        $userModel = new UserModel();
+        $user = $userModel->findById($id);
+
+        if (!$user) {
+            redirect(route('dashboard', 'index'));
+        }
+
+        require VIEW_PATH . '/edit_employee.php';
+    }
+
+    public function saveEditEmployee()
+    {
+        authRequired();
+        $this->enforcePasswordUpdated();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect(route('dashboard', 'index'));
+        }
+
+        $id = trim($_POST['id'] ?? '');
+        
+        if (empty($id)) {
+            redirect(route('dashboard', 'index'));
+        }
+
+        $payload = [];
+        $payload['full_name'] = trim($_POST['full_name'] ?? '');
+        $payload['email'] = trim($_POST['email'] ?? '');
+        $payload['phone'] = trim($_POST['phone'] ?? '');
+        $payload['type'] = trim($_POST['type'] ?? '');
+        $payload['department'] = trim($_POST['department'] ?? '');
+        $payload['position'] = trim($_POST['position'] ?? '');
+        $payload['hired_at'] = trim($_POST['hired_at'] ?? '');
+        $payload['status'] = trim($_POST['status'] ?? '');
+
+        $userModel = new UserModel();
+        $userModel->update($id, $payload);
+
+        $_SESSION['employee_edit_message'] = 'Empleado actualizado exitosamente.';
+
+        redirect(route('dashboard', 'index'));
     }
 }
