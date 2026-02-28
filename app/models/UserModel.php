@@ -102,4 +102,66 @@ class UserModel
 
         return $updated;
     }
+
+    public function findById($id)
+    {
+        $users = json_decode(file_get_contents($this->jsonFile), true) ?? [];
+        foreach ($users as $user) {
+            if (($user['id'] ?? null) === $id) {
+                return $user;
+            }
+        }
+        return null;
+    }
+
+    public function update($id, $data)
+    {
+        $users = json_decode(file_get_contents($this->jsonFile), true) ?? [];
+        $updated = false;
+        $updatedUser = null;
+
+        foreach ($users as &$user) {
+            if (($user['id'] ?? null) === $id) {
+                // Actualizar campos
+                $user['name'] = isset($data['full_name']) ? $data['full_name'] : ($data['name'] ?? $user['name']);
+                $user['email'] = $data['email'] ?? $user['email'];
+                $user['phone'] = $data['phone'] ?? $user['phone'];
+                $user['type'] = $data['type'] ?? $user['type'];
+                $user['department'] = $data['department'] ?? $user['department'];
+                $user['position'] = $data['position'] ?? $user['position'];
+                $user['hired_at'] = $data['hired_at'] ?? $user['hired_at'];
+                $user['status'] = $data['status'] ?? $user['status'];
+                $updated = true;
+                $updatedUser = $user;
+                break;
+            }
+        }
+        unset($user);
+
+        if ($updated) {
+            file_put_contents($this->jsonFile, json_encode($users, JSON_PRETTY_PRINT));
+
+            // Intentar actualizar en MySQL
+            try {
+                $db = Database::connect();
+                $sql = "UPDATE users SET name=:name, email=:email, phone=:phone, type=:type, department=:department, position=:position, hired_at=:hired_at, status=:status WHERE id=:id";
+                $stmt = $db->prepare($sql);
+                $stmt->execute([
+                    ':id' => $id,
+                    ':name' => $updatedUser['name'] ?? '',
+                    ':email' => $updatedUser['email'] ?? '',
+                    ':phone' => $updatedUser['phone'] ?? '',
+                    ':type' => $updatedUser['type'] ?? '',
+                    ':department' => $updatedUser['department'] ?? '',
+                    ':position' => $updatedUser['position'] ?? '',
+                    ':hired_at' => $updatedUser['hired_at'] ?? '',
+                    ':status' => $updatedUser['status'] ?? ''
+                ]);
+            } catch (Exception $e) {
+                // ignorar errores de base de datos
+            }
+        }
+
+        return $updated;
+    }
 }
