@@ -1,50 +1,438 @@
-diff --git a/app/views/audit.php b/app/views/audit.php
-index 569f653a2675336a8781eac1d5ac3191aaf67535..68203f82e1f86640323895a8f9a476d77a3b4d83 100644
---- a/app/views/audit.php
-+++ b/app/views/audit.php
-@@ -1,44 +1,45 @@
+diff --git a/app/controllers/AuthController.php b/app/controllers/AuthController.php
+index 4c43c546c9c991fcb9fbe41e93d6e518b06c879a..e6f92c727ef6cc0e83534a4f8f3468d151f099df 100644
+--- a/app/controllers/AuthController.php
++++ b/app/controllers/AuthController.php
+@@ -21,50 +21,112 @@ class AuthController
+     }
+ 
+ 
+     private function isClientGmailAccount($email)
+     {
+         $email = trim((string)$email);
+         return preg_match('/@gmail\.com$/i', $email) === 1;
+     }
+ 
+     private function passwordRules($password)
+     {
+         return [
+             'length' => strlen($password) >= 8,
+             'lower' => (bool)preg_match('/[a-z]/', $password),
+             'upper' => (bool)preg_match('/[A-Z]/', $password),
+             'number' => (bool)preg_match('/[0-9]/', $password),
+             'special' => (bool)preg_match('/[^A-Za-z0-9]/', $password),
+         ];
+     }
+ 
+     public function login()
+     {
+         require VIEW_PATH . '/login.php';
+     }
+ 
++    public function register()
++    {
++        require VIEW_PATH . '/register.php';
++    }
++
++    public function doRegister()
++    {
++        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
++            redirect(route('auth', 'register'));
++        }
++
++        $name = trim((string)($_POST['name'] ?? ''));
++        $email = trim((string)($_POST['email'] ?? ''));
++        $password = (string)($_POST['password'] ?? '');
++        $confirmPassword = (string)($_POST['confirm_password'] ?? '');
++
++        if ($name === '' || $email === '' || $password === '' || $confirmPassword === '') {
++            $_SESSION['register_error'] = 'Completa todos los campos obligatorios.';
++            redirect(route('auth', 'register'));
++        }
++
++        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
++            $_SESSION['register_error'] = 'Ingresa un correo electrónico válido.';
++            redirect(route('auth', 'register'));
++        }
++
++        $rules = $this->passwordRules($password);
++        if (in_array(false, $rules, true)) {
++            $_SESSION['register_error'] = 'La contraseña no cumple con los requisitos mínimos de seguridad.';
++            redirect(route('auth', 'register'));
++        }
++
++        if ($password !== $confirmPassword) {
++            $_SESSION['register_error'] = 'La confirmación de contraseña no coincide.';
++            redirect(route('auth', 'register'));
++        }
++
++        $userModel = new UserModel();
++        $existingUser = $userModel->findByEmail($email);
++
++        if ($existingUser) {
++            $_SESSION['register_error'] = 'Este correo ya se encuentra registrado.';
++            redirect(route('auth', 'register'));
++        }
++
++        $userModel->create([
++            'full_name' => $name,
++            'email' => $email,
++            'phone' => '',
++            'type' => $this->isClientGmailAccount($email) ? 'Cliente Gmail' : 'Empleado',
++            'department' => $this->isClientGmailAccount($email) ? 'Clientes' : 'Operaciones',
++            'position' => $this->isClientGmailAccount($email) ? 'Cliente' : 'Colaborador',
++            'hired_at' => date('Y-m-d'),
++            'status' => 'Activo',
++            'password' => $password,
++            'must_change_password' => false,
++        ]);
++
++        $_SESSION['register_success'] = 'Cuenta creada correctamente. Ahora puedes iniciar sesión.';
++        redirect(route('auth', 'login'));
++    }
++
+     public function doLogin()
+     {
+         $email = trim($_POST['email'] ?? '');
+         $password = $_POST['password'] ?? '';
+ 
+         $userModel = new UserModel();
+         $user = $userModel->findByEmail($email);
+ 
+         if (!$user || !$this->isPasswordValidForUser($password, $user['password'] ?? null)) {
+             $_SESSION['login_error'] = 'Credenciales incorrectas.';
+             redirect(route('auth', 'login'));
+         }
+ 
+         $otpModel = new OTPModel();
+         $otpCode = $otpModel->generate($email);
+ 
+         $mailer = new MailerService();
+         $otpSent = $mailer->sendOTP($email, (string)$otpCode);
+ 
+         if (!$otpSent) {
+             $_SESSION['login_error'] = 'No se pudo enviar el OTP al correo. Intenta nuevamente.';
+ 
+             $audit = new AuditModel();
+             $audit->log('EVENT_FAILED_OTP_DELIVERY', $email, 'Error enviando OTP por correo en login');
+             redirect(route('auth', 'login'));
+diff --git a/app/controllers/ProductController.php b/app/controllers/ProductController.php
+index 49231e2e462f915827ca52f6578f2c1cb19b103f..e75b38017c3185aa5eab6b737a6ba45c9bfbd608 100644
+--- a/app/controllers/ProductController.php
++++ b/app/controllers/ProductController.php
+@@ -1,27 +1,33 @@
+ <?php
+ 
+ require_once MODEL_PATH . '/UserModel.php';
+ 
+ class ProductController
+ {
+     private function isClientGmailAccount($email)
+     {
+         $email = trim((string)$email);
+         return preg_match('/@gmail\.com$/i', $email) === 1;
+     }
+ 
+     public function index()
+     {
+-        authRequired();
++        $email = $_SESSION['user_id'] ?? null;
++        $isLoggedIn = !empty($email);
++        $isGmail = false;
++        $user = null;
+ 
+-        $email = $_SESSION['user_id'] ?? '';
+-        if (!$this->isClientGmailAccount($email)) {
+-            redirect(route('dashboard', 'index'));
+-        }
++        if ($isLoggedIn) {
++            $isGmail = $this->isClientGmailAccount($email);
++
++            if (!$isGmail) {
++                redirect(route('dashboard', 'index'));
++            }
+ 
+-        $userModel = new UserModel();
+-        $user = $userModel->findByEmail($email);
++            $userModel = new UserModel();
++            $user = $userModel->findByEmail($email);
++        }
+ 
+         require VIEW_PATH . '/products_store.php';
+     }
+ }
+diff --git a/app/views/login.php b/app/views/login.php
+index 49b1564697792950463d6a3ca803cf0e52706ab5..7577d580860e2f1eb8ad33557b13c4032bff5c86 100644
+--- a/app/views/login.php
++++ b/app/views/login.php
+@@ -2,43 +2,51 @@
+ <html lang="es">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Login</title>
+     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
+     <script src="<?= asset('theme.js') ?>" defer></script>
+ </head>
+ <body>
+ <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
+ <div class="page-shell">
+     <section class="panel">
+         <h1>Bienvenido de vuelta</h1>
+         <p class="subtitle">Ingresa tus credenciales para continuar.</p>
+ 
+         <?php if (!empty($_SESSION['login_error'])): ?>
+             <div class="alert alert-error"><?= htmlspecialchars($_SESSION['login_error']) ?></div>
+             <?php unset($_SESSION['login_error']); ?>
+         <?php endif; ?>
+ 
+         <?php if (!empty($_SESSION['password_change_success'])): ?>
+             <div class="alert alert-success"><?= htmlspecialchars($_SESSION['password_change_success']) ?></div>
+             <?php unset($_SESSION['password_change_success']); ?>
+         <?php endif; ?>
+ 
++        <?php if (!empty($_SESSION['register_success'])): ?>
++            <div class="alert alert-success"><?= htmlspecialchars($_SESSION['register_success']) ?></div>
++            <?php unset($_SESSION['register_success']); ?>
++        <?php endif; ?>
++
+         <form class="form-grid" method="POST" action="<?= route('auth', 'doLogin') ?>">
+             <div class="field">
+                 <label for="email">Correo electrónico</label>
+                 <input id="email" type="email" name="email" placeholder="usuario@empresa.com" required>
+             </div>
+ 
+             <div class="field">
+                 <label for="password">Contraseña</label>
+                 <input id="password" type="password" name="password" placeholder="••••••••" required>
+             </div>
+ 
+             <button class="btn-primary" type="submit">Iniciar sesión</button>
+         </form>
+ 
++        <div class="links-row">
++            <a href="<?= route('auth', 'register') ?>">¿No tienes cuenta? Regístrate</a>
++        </div>
+     </section>
+ </div>
+ </body>
+ </html>
+diff --git a/app/views/products_store.php b/app/views/products_store.php
+index f9e4c374b5024ec7d9072bb707d38a6550dcda35..fd561013bdd0d02c83ef9aa2eb9dcfbab403f49d 100644
+--- a/app/views/products_store.php
++++ b/app/views/products_store.php
+@@ -1,40 +1,52 @@
  <!DOCTYPE html>
  <html lang="es">
  <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Auditoría del Sistema</title>
-     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
-     <link rel="stylesheet" href="<?= asset('dashboard.css') ?>">
-     <script src="<?= asset('theme.js') ?>" defer></script>
+     <title>Tienda de productos</title>
+     <link rel="stylesheet" href="<?= asset('products.css') ?>">
  </head>
- <body class="dashboard-body">
- <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
- <div class="dashboard-layout">
-     <aside class="dashboard-sidebar">
-         <h3>Dashboard</h3>
-         <p>Panel de Administración</p>
+ <body>
+     <header class="store-header">
+         <div>
+             <h1>Tienda TechShop</h1>
+-            <p class="subtitle">Bienvenido, <?= htmlspecialchars($user['name'] ?? $email) ?></p>
++            <?php if (!empty($isLoggedIn)): ?>
++                <p class="subtitle">Bienvenido, <?= htmlspecialchars($user['name'] ?? $email) ?></p>
++            <?php else: ?>
++                <p class="subtitle">Explora nuestros productos y luego inicia sesión o regístrate.</p>
++            <?php endif; ?>
+         </div>
+-        <a class="logout" href="<?= route('dashboard', 'logout') ?>">Cerrar sesión</a>
++
++        <?php if (!empty($isLoggedIn)): ?>
++            <a class="logout" href="<?= route('dashboard', 'logout') ?>">Cerrar sesión</a>
++        <?php else: ?>
++            <div class="guest-actions">
++                <a class="action-btn" href="<?= route('auth', 'login') ?>">Iniciar sesión</a>
++                <a class="action-btn action-btn--secondary" href="<?= route('auth', 'register') ?>">Registrarte</a>
++            </div>
++        <?php endif; ?>
+     </header>
  
-         <span class="sidebar-section">PANEL</span>
-         <a class="sidebar-link" href="<?= route('dashboard', 'index') ?>">Inicio</a>
-+        <a class="sidebar-link" href="<?= route('dashboard', 'index') ?>&section=ventas">Ventas</a>
-         <a class="sidebar-link active" href="<?= route('dashboard', 'audit') ?>">Auditoría</a>
+     <main class="catalog">
+         <article class="card">
+             <h2>Laptop Pro X14</h2>
+             <p>Rendimiento premium para trabajo y estudio.</p>
+             <span>S/ 1,299</span>
+             <button type="button">Agregar al carrito</button>
+         </article>
  
-         <span class="sidebar-section">GENERAL</span>
-         <a class="sidebar-link" href="<?= route('dashboard', 'addEmployee') ?>">Agregar empleado</a>
-         <a class="sidebar-link" href="<?= route('dashboard', 'logout') ?>">Cerrar sesión</a>
-     </aside>
+         <article class="card">
+             <h2>Audífonos NoiseFree</h2>
+             <p>Cancelación de ruido y batería de 30 horas.</p>
+             <span>S/ 199</span>
+             <button type="button">Agregar al carrito</button>
+         </article>
  
-     <main class="dashboard-main">
-         <section class="panel panel--wide hr-panel hr-panel--fullscreen">
-             <h1>Auditoría del sistema</h1>
-             <p class="subtitle">Registro de eventos y actividad reciente.</p>
+         <article class="card">
+             <h2>Mouse Gamer RGB</h2>
+             <p>Precisión y ergonomía para largas sesiones.</p>
+             <span>S/ 59</span>
+             <button type="button">Agregar al carrito</button>
+         </article>
  
-             <div class="table-wrap table-wrap--dashboard">
-                 <table class="audit-table dashboard-table">
-                     <thead>
-                     <tr>
-                         <th>Evento</th>
-                         <th>Email</th>
-                         <th>IP</th>
-                         <th>Fecha</th>
-                         <th>Detalles</th>
-                     </tr>
-                     </thead>
-                     <tbody>
-                     <?php foreach ($logs as $log): ?>
+         <article class="card">
+diff --git a/app/views/register.php b/app/views/register.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..d69e2ba45549c2f7cfaa1898d5fa105a9d84026e
+--- /dev/null
++++ b/app/views/register.php
+@@ -0,0 +1,52 @@
++<!DOCTYPE html>
++<html lang="es">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>Registro</title>
++    <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
++    <script src="<?= asset('theme.js') ?>" defer></script>
++</head>
++<body>
++<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
++<div class="page-shell">
++    <section class="panel">
++        <h1>Crea tu cuenta</h1>
++        <p class="subtitle">Regístrate para iniciar sesión y continuar.</p>
++
++        <?php if (!empty($_SESSION['register_error'])): ?>
++            <div class="alert alert-error"><?= htmlspecialchars($_SESSION['register_error']) ?></div>
++            <?php unset($_SESSION['register_error']); ?>
++        <?php endif; ?>
++
++        <form class="form-grid" method="POST" action="<?= route('auth', 'doRegister') ?>">
++            <div class="field">
++                <label for="name">Nombre completo</label>
++                <input id="name" type="text" name="name" placeholder="Tu nombre" required>
++            </div>
++
++            <div class="field">
++                <label for="email">Correo electrónico</label>
++                <input id="email" type="email" name="email" placeholder="usuario@gmail.com" required>
++            </div>
++
++            <div class="field">
++                <label for="password">Contraseña</label>
++                <input id="password" type="password" name="password" placeholder="••••••••" required>
++            </div>
++
++            <div class="field">
++                <label for="confirm_password">Confirmar contraseña</label>
++                <input id="confirm_password" type="password" name="confirm_password" placeholder="••••••••" required>
++            </div>
++
++            <button class="btn-primary" type="submit">Registrarme</button>
++        </form>
++
++        <div class="links-row">
++            <a href="<?= route('auth', 'login') ?>">Ya tengo cuenta, iniciar sesión</a>
++        </div>
++    </section>
++</div>
++</body>
++</html>
+diff --git a/public/index.php b/public/index.php
+index f5f6bb8884ab0f4405c8176a4d7321788008d3cc..68a326e419b7103c6e69f5480bcecc7fcdfcb580 100644
+--- a/public/index.php
++++ b/public/index.php
+@@ -1,23 +1,23 @@
+ <?php
+ require_once __DIR__ . '/../config.php';
+ 
+-$controller = $_GET['controller'] ?? 'auth';
+-$action = $_GET['action'] ?? 'login';
++$controller = $_GET['controller'] ?? 'product';
++$action = $_GET['action'] ?? 'index';
+ 
+ $controllerName = ucfirst($controller) . 'Controller';
+ $controllerFile = CONTROLLER_PATH . '/' . $controllerName . '.php';
+ 
+ if (!file_exists($controllerFile)) {
+     http_response_code(404);
+     die('Controlador no encontrado');
+ }
+ 
+ require_once $controllerFile;
+ $controllerObject = new $controllerName();
+ 
+ if (!method_exists($controllerObject, $action)) {
+     http_response_code(404);
+     die('Acción no encontrada');
+ }
+ 
+ $controllerObject->$action();
+diff --git a/public/products.css b/public/products.css
+index 842bfe481f3b536cb1461b9400b454195a266454..6374816a981a9c69b58819347fcaefb6e2f4fbc6 100644
+--- a/public/products.css
++++ b/public/products.css
+@@ -30,50 +30,68 @@ body {
+ }
+ 
+ .badge {
+     margin: 0;
+     font-weight: 600;
+     opacity: .85;
+ }
+ 
+ h1 {
+     margin: 8px 0;
+ }
+ 
+ .subtitle {
+     margin: 0;
+     opacity: .95;
+ }
+ 
+ .logout {
+     color: #fff;
+     text-decoration: none;
+     background: rgba(255,255,255,.2);
+     padding: 10px 14px;
+     border-radius: 10px;
+ }
+ 
++.guest-actions {
++    display: flex;
++    gap: 10px;
++}
++
++.action-btn {
++    color: #fff;
++    text-decoration: none;
++    background: rgba(255,255,255,.2);
++    padding: 10px 14px;
++    border-radius: 10px;
++    font-weight: 600;
++}
++
++.action-btn--secondary {
++    background: rgba(0, 0, 0, .22);
++}
++
+ .catalog {
+     padding: 32px 8vw 48px;
+     display: grid;
+     gap: 20px;
+     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+ }
+ 
+ .card {
+     background: var(--card);
+     border-radius: 16px;
+     padding: 18px;
+     box-shadow: 0 12px 24px rgba(15, 23, 42, .08);
+     display: grid;
+     gap: 10px;
+ }
+ 
+ .card h2 {
+     margin: 0;
+     font-size: 1.1rem;
+ }
+ 
+ .card p {
+     margin: 0;
+     color: var(--muted);
+ }

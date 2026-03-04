@@ -43,6 +43,68 @@ class AuthController
         require VIEW_PATH . '/login.php';
     }
 
+    public function register()
+    {
+        require VIEW_PATH . '/register.php';
+    }
+
+    public function doRegister()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect(route('auth', 'register'));
+        }
+
+        $name = trim((string)($_POST['name'] ?? ''));
+        $email = trim((string)($_POST['email'] ?? ''));
+        $password = (string)($_POST['password'] ?? '');
+        $confirmPassword = (string)($_POST['confirm_password'] ?? '');
+
+        if ($name === '' || $email === '' || $password === '' || $confirmPassword === '') {
+            $_SESSION['register_error'] = 'Completa todos los campos obligatorios.';
+            redirect(route('auth', 'register'));
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['register_error'] = 'Ingresa un correo electrónico válido.';
+            redirect(route('auth', 'register'));
+        }
+
+        $rules = $this->passwordRules($password);
+        if (in_array(false, $rules, true)) {
+            $_SESSION['register_error'] = 'La contraseña no cumple con los requisitos mínimos de seguridad.';
+            redirect(route('auth', 'register'));
+        }
+
+        if ($password !== $confirmPassword) {
+            $_SESSION['register_error'] = 'La confirmación de contraseña no coincide.';
+            redirect(route('auth', 'register'));
+        }
+
+        $userModel = new UserModel();
+        $existingUser = $userModel->findByEmail($email);
+
+        if ($existingUser) {
+            $_SESSION['register_error'] = 'Este correo ya se encuentra registrado.';
+            redirect(route('auth', 'register'));
+        }
+
+        $userModel->create([
+            'full_name' => $name,
+            'email' => $email,
+            'phone' => '',
+            'type' => $this->isClientGmailAccount($email) ? 'Cliente Gmail' : 'Empleado',
+            'department' => $this->isClientGmailAccount($email) ? 'Clientes' : 'Operaciones',
+            'position' => $this->isClientGmailAccount($email) ? 'Cliente' : 'Colaborador',
+            'hired_at' => date('Y-m-d'),
+            'status' => 'Activo',
+            'password' => $password,
+            'must_change_password' => false,
+        ]);
+
+        $_SESSION['register_success'] = 'Cuenta creada correctamente. Ahora puedes iniciar sesión.';
+        redirect(route('auth', 'login'));
+    }
+
     public function doLogin()
     {
         $email = trim($_POST['email'] ?? '');

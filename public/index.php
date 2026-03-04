@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
-$controller = $_GET['controller'] ?? 'auth';
-$action = $_GET['action'] ?? 'login';
+$controller = $_GET['controller'] ?? 'product';
+$action = $_GET['action'] ?? 'index';
 
 $controllerName = ucfirst($controller) . 'Controller';
 $controllerFile = CONTROLLER_PATH . '/' . $controllerName . '.php';

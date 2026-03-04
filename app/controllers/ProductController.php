@@ -12,15 +12,21 @@ class ProductController
 
     public function index()
     {
-        authRequired();
+        $email = $_SESSION['user_id'] ?? null;
+        $isLoggedIn = !empty($email);
+        $isGmail = false;
+        $user = null;
 
-        $email = $_SESSION['user_id'] ?? '';
-        if (!$this->isClientGmailAccount($email)) {
-            redirect(route('dashboard', 'index'));
+        if ($isLoggedIn) {
+            $isGmail = $this->isClientGmailAccount($email);
+
+            if (!$isGmail) {
+                redirect(route('dashboard', 'index'));
+            }
+
+            $userModel = new UserModel();
+            $user = $userModel->findByEmail($email);
         }
-
-        $userModel = new UserModel();
-        $user = $userModel->findByEmail($email);
 
         require VIEW_PATH . '/products_store.php';
     }

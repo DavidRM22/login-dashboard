@@ -10,9 +10,21 @@
     <header class="store-header">
         <div>
             <h1>Tienda TechShop</h1>
-            <p class="subtitle">Bienvenido, <?= htmlspecialchars($user['name'] ?? $email) ?></p>
+            <?php if (!empty($isLoggedIn)): ?>
+                <p class="subtitle">Bienvenido, <?= htmlspecialchars($user['name'] ?? $email) ?></p>
+            <?php else: ?>
+                <p class="subtitle">Explora nuestros productos y luego inicia sesión o regístrate.</p>
+            <?php endif; ?>
         </div>
-        <a class="logout" href="<?= route('dashboard', 'logout') ?>">Cerrar sesión</a>
+
+        <?php if (!empty($isLoggedIn)): ?>
+            <a class="logout" href="<?= route('dashboard', 'logout') ?>">Cerrar sesión</a>
+        <?php else: ?>
+            <div class="guest-actions">
+                <a class="action-btn" href="<?= route('auth', 'login') ?>">Iniciar sesión</a>
+                <a class="action-btn action-btn--secondary" href="<?= route('auth', 'register') ?>">Registrarte</a>
+            </div>
+        <?php endif; ?>
     </header>
 
     <main class="catalog">

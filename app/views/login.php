@@ -24,6 +24,11 @@
             <?php unset($_SESSION['password_change_success']); ?>
         <?php endif; ?>
 
+        <?php if (!empty($_SESSION['register_success'])): ?>
+            <div class="alert alert-success"><?= htmlspecialchars($_SESSION['register_success']) ?></div>
+            <?php unset($_SESSION['register_success']); ?>
+        <?php endif; ?>
+
         <form class="form-grid" method="POST" action="<?= route('auth', 'doLogin') ?>">
             <div class="field">
                 <label for="email">Correo electrónico</label>
@@ -38,6 +43,9 @@
             <button class="btn-primary" type="submit">Iniciar sesión</button>
         </form>
 
+        <div class="links-row">
+            <a href="<?= route('auth', 'register') ?>">¿No tienes cuenta? Regístrate</a>
+        </div>
     </section>
 </div>
 </body>
