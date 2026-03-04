@@ -365,5 +365,20 @@
         "password": "$2y$10$38zLudpU85w3m1JLa9Tvs.yyyZehp5vmkMoa4\/vaa4wNX53JEV4p2",
         "must_change_password": true,
         "created_at": "2026-02-27 21:42:29"
+    },
+    {
+        "id": "69a8637cca44a",
+        "name": "Juan",
+        "email": "admin@ventas.com",
+        "phone": "987654321",
+        "type": "Administrador",
+        "department": "Seleccionar departamento",
+        "position": "Seleccionar puesto",
+        "hired_at": "",
+        "status": "Activo",
+        "photo_url": "uploads\/profiles\/profile_69a8637cca1ab1.81885138.jpg",
+        "password": "$2y$10$8t4baT.M9s0lVhMt1ZLKieKgACguVJXhgjXXjGb9bTDnrlEhlmZGm",
+        "must_change_password": false,
+        "created_at": "2026-03-04 11:53:16"
     }
 ]

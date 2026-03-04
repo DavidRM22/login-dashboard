@@ -9,9 +9,8 @@
 <body>
     <header class="store-header">
         <div>
-            <p class="badge">Zona Clientes</p>
             <h1>Tienda TechShop</h1>
-            <p class="subtitle">Bienvenido, <?= htmlspecialchars($user['name'] ?? $email) ?>. Acceso exclusivo para cuentas de Gmail.</p>
+            <p class="subtitle">Bienvenido, <?= htmlspecialchars($user['name'] ?? $email) ?></p>
         </div>
         <a class="logout" href="<?= route('dashboard', 'logout') ?>">Cerrar sesión</a>
     </header>
