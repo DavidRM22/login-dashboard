@@ -1,303 +1,388 @@
-diff --git a/app/controllers/AuthController.php b/app/controllers/AuthController.php
-index 5b7cc5f773205894d939f039577b08a9b0a7ac9e..4c43c546c9c991fcb9fbe41e93d6e518b06c879a 100644
---- a/app/controllers/AuthController.php
-+++ b/app/controllers/AuthController.php
-@@ -1,47 +1,54 @@
+diff --git a/app/views/dashboard.php b/app/views/dashboard.php
+index d267ce76400164f2426f08846607f02f0d10e554..8be2bdd4714ddc0223077b2c8e0fbe22818677bd 100644
+--- a/app/views/dashboard.php
++++ b/app/views/dashboard.php
+@@ -1,56 +1,196 @@
+ <!DOCTYPE html>
+ <html lang="es">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Dashboard RRHH</title>
+     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
+     <link rel="stylesheet" href="<?= asset('dashboard.css') ?>">
+     <script src="<?= asset('theme.js') ?>" defer></script>
+ </head>
+ <body class="dashboard-body">
+ <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
  <?php
- 
- require_once MODEL_PATH . '/AuditModel.php';
- require_once MODEL_PATH . '/UserModel.php';
- require_once MODEL_PATH . '/OTPModel.php';
- require_once APP_PATH . '/services/MailerService.php';
- 
- class AuthController
- {
-     private function isPasswordValidForUser($plainPassword, $storedPassword)
-     {
-         if ($storedPassword === null || $storedPassword === '') {
-             return false;
-         }
- 
-         if (password_verify($plainPassword, $storedPassword)) {
-             return true;
-         }
- 
-         return hash_equals((string)$storedPassword, (string)$plainPassword);
-     }
- 
+ $view = $_GET['view'] ?? 'table';
+ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
++$section = $_GET['section'] ?? 'rrhh';
++$activeSection = in_array($section, ['rrhh', 'ventas'], true) ? $section : 'rrhh';
++$salesTab = $_GET['sales_tab'] ?? 'ventas';
++$activeSalesTab = in_array($salesTab, ['ventas', 'auditoria'], true) ? $salesTab : 'ventas';
 +
-+    private function isClientGmailAccount($email)
-+    {
-+        $email = trim((string)$email);
-+        return preg_match('/@gmail\.com$/i', $email) === 1;
-+    }
++$salesRows = [
++    ['id' => 'VTA-001', 'cliente' => 'Carlos Mendoza', 'producto' => 'Elegance S500', 'monto' => '$85,000', 'pago' => 'Crédito', 'estado' => 'Completada', 'fecha' => '2026-03-04'],
++    ['id' => 'VTA-002', 'cliente' => 'Ana García', 'producto' => 'Sport GT-R', 'monto' => '$120,000', 'pago' => 'Contado', 'estado' => 'Completada', 'fecha' => '2026-03-02'],
++    ['id' => 'VTA-003', 'cliente' => 'Luis Herrera', 'producto' => 'Urban X2', 'monto' => '$46,500', 'pago' => 'Transferencia', 'estado' => 'Pendiente', 'fecha' => '2026-03-01'],
++    ['id' => 'VTA-004', 'cliente' => 'María Paredes', 'producto' => 'Roadster V8', 'monto' => '$98,300', 'pago' => 'Crédito', 'estado' => 'En revisión', 'fecha' => '2026-02-28'],
++];
 +
-     private function passwordRules($password)
-     {
-         return [
-             'length' => strlen($password) >= 8,
-             'lower' => (bool)preg_match('/[a-z]/', $password),
-             'upper' => (bool)preg_match('/[A-Z]/', $password),
-             'number' => (bool)preg_match('/[0-9]/', $password),
-             'special' => (bool)preg_match('/[^A-Za-z0-9]/', $password),
-         ];
-     }
- 
-     public function login()
-     {
-         require VIEW_PATH . '/login.php';
-     }
- 
-     public function doLogin()
-     {
-         $email = trim($_POST['email'] ?? '');
-         $password = $_POST['password'] ?? '';
- 
-         $userModel = new UserModel();
-         $user = $userModel->findByEmail($email);
- 
-         if (!$user || !$this->isPasswordValidForUser($password, $user['password'] ?? null)) {
-@@ -87,50 +94,54 @@ class AuthController
- 
-         $otpModel = new OTPModel();
-         $isValid = $otpModel->verify($email, $code);
- 
-         if (!$isValid) {
-             echo "❌ Código incorrecto o expirado<br>";
-             echo "<a href='" . route('auth', 'verify') . "'>Intentar de nuevo</a>";
-             $audit = new AuditModel();
-             $audit->log('EVENT_FAILED_OTP', $email, 'Código incorrecto o expirado');
-             return;
-         }
- 
-         $audit = new AuditModel();
-         $audit->log('EVENT_LOGIN', $email, 'Login exitoso');
- 
-         $_SESSION['user_id'] = $email;
-         unset($_SESSION['otp_email']);
- 
-         $userModel = new UserModel();
-         $user = $userModel->findByEmail($email);
- 
-         if (!empty($user['must_change_password'])) {
-             redirect(route('auth', 'changePasswordRequired'));
-         }
- 
-+        if ($this->isClientGmailAccount($email)) {
-+            redirect(route('product', 'index'));
++$salesSearch = trim($_GET['sales_search'] ?? '');
++$salesStatus = trim($_GET['sales_status'] ?? '');
++$salesPayment = trim($_GET['sales_payment'] ?? '');
++
++$filteredSalesRows = [];
++foreach ($salesRows as $row) {
++    if ($salesSearch !== '') {
++        $needle = mb_strtolower($salesSearch);
++        $found = false;
++        foreach (['id', 'cliente', 'producto'] as $field) {
++            if (mb_strpos(mb_strtolower($row[$field]), $needle) !== false) {
++                $found = true;
++                break;
++            }
 +        }
-+
-         redirect(route('dashboard', 'index'));
-     }
- 
-     public function changePasswordRequired()
-     {
-         authRequired();
- 
-         $email = $_SESSION['user_id'];
-         $userModel = new UserModel();
-         $user = $userModel->findByEmail($email);
- 
-         if (empty($user['must_change_password'])) {
-             redirect(route('dashboard', 'index'));
-         }
- 
-         require VIEW_PATH . '/force_change_password.php';
-     }
- 
-     public function updateMandatoryPassword()
-     {
-         authRequired();
- 
-         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-             redirect(route('auth', 'changePasswordRequired'));
-         }
-diff --git a/app/controllers/ProductController.php b/app/controllers/ProductController.php
-new file mode 100644
-index 0000000000000000000000000000000000000000..49231e2e462f915827ca52f6578f2c1cb19b103f
---- /dev/null
-+++ b/app/controllers/ProductController.php
-@@ -0,0 +1,27 @@
-+<?php
-+
-+require_once MODEL_PATH . '/UserModel.php';
-+
-+class ProductController
-+{
-+    private function isClientGmailAccount($email)
-+    {
-+        $email = trim((string)$email);
-+        return preg_match('/@gmail\.com$/i', $email) === 1;
-+    }
-+
-+    public function index()
-+    {
-+        authRequired();
-+
-+        $email = $_SESSION['user_id'] ?? '';
-+        if (!$this->isClientGmailAccount($email)) {
-+            redirect(route('dashboard', 'index'));
++        if (!$found) {
++            continue;
 +        }
-+
-+        $userModel = new UserModel();
-+        $user = $userModel->findByEmail($email);
-+
-+        require VIEW_PATH . '/products_store.php';
 +    }
++
++    if ($salesStatus !== '' && $row['estado'] !== $salesStatus) {
++        continue;
++    }
++
++    if ($salesPayment !== '' && $row['pago'] !== $salesPayment) {
++        continue;
++    }
++
++    $filteredSalesRows[] = $row;
 +}
-diff --git a/app/views/products_store.php b/app/views/products_store.php
-new file mode 100644
-index 0000000000000000000000000000000000000000..2a3692b2a3f1d3e5108df9d0c270d3312f5e0a22
---- /dev/null
-+++ b/app/views/products_store.php
-@@ -0,0 +1,49 @@
-+<!DOCTYPE html>
-+<html lang="es">
-+<head>
-+    <meta charset="UTF-8">
-+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-+    <title>Tienda de productos</title>
-+    <link rel="stylesheet" href="<?= asset('products.css') ?>">
-+</head>
-+<body>
-+    <header class="store-header">
-+        <div>
-+            <p class="badge">Zona Clientes</p>
-+            <h1>Tienda TechShop</h1>
-+            <p class="subtitle">Bienvenido, <?= htmlspecialchars($user['name'] ?? $email) ?>. Acceso exclusivo para cuentas de Gmail.</p>
-+        </div>
-+        <a class="logout" href="<?= route('dashboard', 'logout') ?>">Cerrar sesión</a>
-+    </header>
+ ?>
+ <div class="dashboard-layout">
+     <aside class="dashboard-sidebar">
+         <h3>Dashboard</h3>
+         <p>Panel de Administración</p>
+ 
+         <span class="sidebar-section">PANEL</span>
+-        <a class="sidebar-link active" href="<?= route('dashboard', 'index') ?>">Inicio</a>
++        <a class="sidebar-link <?= $activeSection === 'rrhh' ? 'active' : '' ?>" href="<?= route('dashboard', 'index') ?>">Inicio</a>
++        <a class="sidebar-link <?= $activeSection === 'ventas' ? 'active' : '' ?>" href="<?= route('dashboard', 'index') ?>&section=ventas">Ventas</a>
+         <a class="sidebar-link" href="<?= route('dashboard', 'audit') ?>">Auditoría</a>
+ 
+         <span class="sidebar-section">GENERAL</span>
+         <a class="sidebar-link" href="<?= route('dashboard', 'addEmployee') ?>">Agregar empleado</a>
+         <a class="sidebar-link" href="<?= route('dashboard', 'logout') ?>">Cerrar sesión</a>
+     </aside>
+ 
+     <main class="dashboard-main">
++        <?php if ($activeSection === 'ventas'): ?>
++            <section class="panel panel--wide hr-panel hr-panel--fullscreen sales-panel">
++                <h1>Ventas</h1>
 +
-+    <main class="catalog">
-+        <article class="card">
-+            <h2>Laptop Pro X14</h2>
-+            <p>Rendimiento premium para trabajo y estudio.</p>
-+            <span>$1,299</span>
-+            <button type="button">Agregar al carrito</button>
-+        </article>
++                <nav class="tab-row sales-tab-row">
++                    <a class="tab-item <?= $activeSalesTab === 'ventas' ? 'active' : '' ?>" href="<?= route('dashboard', 'index') ?>&section=ventas&sales_tab=ventas">Ventas</a>
++                    <a class="tab-item <?= $activeSalesTab === 'auditoria' ? 'active' : '' ?>" href="<?= route('dashboard', 'index') ?>&section=ventas&sales_tab=auditoria">Auditoría de ventas</a>
++                </nav>
 +
-+        <article class="card">
-+            <h2>Audífonos NoiseFree</h2>
-+            <p>Cancelación de ruido y batería de 30 horas.</p>
-+            <span>$199</span>
-+            <button type="button">Agregar al carrito</button>
-+        </article>
++                <?php if ($activeSalesTab === 'ventas'): ?>
++                    <form class="filter-row sales-filter-row" method="get" action="<?= route('dashboard', 'index') ?>" aria-label="Filtros de ventas">
++                        <input type="hidden" name="controller" value="dashboard">
++                        <input type="hidden" name="action" value="index">
++                        <input type="hidden" name="section" value="ventas">
++                        <input type="hidden" name="sales_tab" value="ventas">
++                        <input type="search" name="sales_search" value="<?= htmlspecialchars($salesSearch) ?>" placeholder="Buscar venta..." aria-label="Buscar venta">
 +
-+        <article class="card">
-+            <h2>Mouse Gamer RGB</h2>
-+            <p>Precisión y ergonomía para largas sesiones.</p>
-+            <span>$59</span>
-+            <button type="button">Agregar al carrito</button>
-+        </article>
++                        <select name="sales_status" aria-label="Filtrar por estado">
++                            <option value="">Estado</option>
++                            <option value="Completada" <?= $salesStatus === 'Completada' ? 'selected' : '' ?>>Completada</option>
++                            <option value="Pendiente" <?= $salesStatus === 'Pendiente' ? 'selected' : '' ?>>Pendiente</option>
++                            <option value="En revisión" <?= $salesStatus === 'En revisión' ? 'selected' : '' ?>>En revisión</option>
++                        </select>
 +
-+        <article class="card">
-+            <h2>Monitor UltraWide 34"</h2>
-+            <p>Más espacio visual para productividad total.</p>
-+            <span>$499</span>
-+            <button type="button">Agregar al carrito</button>
-+        </article>
-+    </main>
-+</body>
-+</html>
-diff --git a/public/products.css b/public/products.css
-new file mode 100644
-index 0000000000000000000000000000000000000000..842bfe481f3b536cb1461b9400b454195a266454
---- /dev/null
-+++ b/public/products.css
-@@ -0,0 +1,95 @@
-+:root {
-+    color-scheme: light;
-+    --bg: #f4f6fb;
-+    --card: #ffffff;
-+    --primary: #6b46ff;
-+    --primary-dark: #5032c9;
-+    --text: #111827;
-+    --muted: #4b5563;
++                        <select name="sales_payment" aria-label="Filtrar por pago">
++                            <option value="">Pago</option>
++                            <option value="Contado" <?= $salesPayment === 'Contado' ? 'selected' : '' ?>>Contado</option>
++                            <option value="Crédito" <?= $salesPayment === 'Crédito' ? 'selected' : '' ?>>Crédito</option>
++                            <option value="Transferencia" <?= $salesPayment === 'Transferencia' ? 'selected' : '' ?>>Transferencia</option>
++                        </select>
++
++                        <button class="btn-secondary" type="submit">Filtrar</button>
++                    </form>
++
++                    <div class="table-wrap table-wrap--dashboard">
++                        <table class="audit-table dashboard-table sales-table">
++                            <thead>
++                            <tr>
++                                <th>ID</th>
++                                <th>Cliente</th>
++                                <th>Producto</th>
++                                <th>Monto</th>
++                                <th>Pago</th>
++                                <th>Estado</th>
++                                <th>Fecha</th>
++                            </tr>
++                            </thead>
++                            <tbody>
++                            <?php foreach ($filteredSalesRows as $sale): ?>
++                                <tr>
++                                    <td><?= htmlspecialchars($sale['id']) ?></td>
++                                    <td><?= htmlspecialchars($sale['cliente']) ?></td>
++                                    <td><?= htmlspecialchars($sale['producto']) ?></td>
++                                    <td><?= htmlspecialchars($sale['monto']) ?></td>
++                                    <td><?= htmlspecialchars($sale['pago']) ?></td>
++                                    <td><span class="status-chip sales-status sales-status--<?= strtolower(str_replace(' ', '-', $sale['estado'])) ?>"><?= htmlspecialchars($sale['estado']) ?></span></td>
++                                    <td><?= htmlspecialchars($sale['fecha']) ?></td>
++                                </tr>
++                            <?php endforeach; ?>
++                            <?php if (empty($filteredSalesRows)): ?>
++                                <tr>
++                                    <td colspan="7">No se encontraron ventas con los filtros seleccionados.</td>
++                                </tr>
++                            <?php endif; ?>
++                            </tbody>
++                        </table>
++                    </div>
++                <?php else: ?>
++                    <div class="table-wrap table-wrap--dashboard">
++                        <table class="audit-table dashboard-table sales-table">
++                            <thead>
++                            <tr>
++                                <th>Evento</th>
++                                <th>Usuario</th>
++                                <th>Detalle</th>
++                                <th>Fecha</th>
++                            </tr>
++                            </thead>
++                            <tbody>
++                            <tr>
++                                <td>Edición de venta</td>
++                                <td>admin@empresa.com</td>
++                                <td>Se actualizó el estado de VTA-003 a Pendiente.</td>
++                                <td>2026-03-04 09:42</td>
++                            </tr>
++                            <tr>
++                                <td>Anulación</td>
++                                <td>supervisor@empresa.com</td>
++                                <td>Se anuló el cobro de la venta VTA-004 para revisión.</td>
++                                <td>2026-03-03 15:10</td>
++                            </tr>
++                            </tbody>
++                        </table>
++                    </div>
++                <?php endif; ?>
++            </section>
++        <?php else: ?>
+         <section class="panel panel--wide hr-panel hr-panel--fullscreen">
+             <h1>Formulario Tabla Detallada</h1>
+ 
+             <div class="module-headline">
+                 <h2>Gestión Interna (RRHH & Ops)</h2>
+                 <p>Recursos humanos, soporte al cliente y comunidad</p>
+             </div>
+ 
+             <nav class="tab-row">
+                 <a class="tab-item active" href="<?= route('dashboard', 'index') ?>">Recursos Humanos</a>
+                 <a class="tab-item" href="#">Soporte</a>
+                 <a class="tab-item" href="#">Comunidad</a>
+             </nav>
+ 
+             <div class="subtab-row">
+                 <a class="subtab-item active" href="<?= route('dashboard', 'index') ?>">Personal</a>
+                 <a class="subtab-item" href="<?= route('dashboard', 'index') ?>">Desempeño</a>
+                 <a class="subtab-item" href="<?= route('dashboard', 'index') ?>">Objetivos</a>
+                 <a class="subtab-item" href="<?= route('dashboard', 'audit') ?>">Auditoría</a>
+             </div>
+ 
+             <div class="module-header">
+                 <div>
+                     <h3>Recursos Humanos</h3>
+                     <p class="subtitle">Gestión de personal y empleados</p>
+@@ -188,29 +328,30 @@ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
+                         if (empty($rows)) :
+                             // fallback a mostrar usuario actual
+                             $rows = isset($user) ? [$user] : [];
+                         endif;
+ 
+                         foreach ($rows as $u) :
+                             ?>
+                             <tr>
+                                 <td><?= htmlspecialchars($u['name'] ?? '') ?></td>
+                                 <td><?= htmlspecialchars($u['email'] ?? '') ?></td>
+                                 <td><span class="role-chip"><?= htmlspecialchars($u['type'] ?? '') ?></span></td>
+                                 <td><?= htmlspecialchars($u['position'] ?? '') ?></td>
+                                 <td><?= htmlspecialchars($u['department'] ?? '') ?></td>
+                                 <td><span class="status-chip"><?= htmlspecialchars($u['status'] ?? '') ?></span></td>
+                                 <td>
+                                     <a class="table-link" href="<?= route('dashboard', 'viewEmployee') ?>&id=<?= urlencode($u['id'] ?? '') ?>">Ver</a>
+                                     <a class="table-link" href="<?= route('dashboard', 'editEmployee') ?>&id=<?= urlencode($u['id'] ?? '') ?>">Editar</a>
+                                 </td>
+                             </tr>
+                         <?php endforeach; ?>
+                         </tbody>
+                     </table>
+                 </div>
+             <?php endif; ?>
+         </section>
++        <?php endif; ?>
+     </main>
+ </div>
+ </body>
+ </html>
+diff --git a/public/dashboard.css b/public/dashboard.css
+index f0cf84eadd6033fab1e59643c48c29ff11b0540d..94354f3b040a5d48db6692934c366c325304af34 100644
+--- a/public/dashboard.css
++++ b/public/dashboard.css
+@@ -84,50 +84,95 @@
+     color: #bfd0f0;
+     font-size: 0.9rem;
+ }
+ 
+ .stat-value {
+     margin: 10px 0 4px;
+     font-size: 2rem;
+     font-weight: 700;
+ }
+ 
+ .stat-card small {
+     color: #96abd3;
+ }
+ 
+ .media-tabs {
+     margin-top: 18px;
+ }
+ 
+ .filter-row {
+     margin-top: 14px;
+     display: grid;
+     grid-template-columns: 2fr 1fr 1fr;
+     gap: 10px;
+ }
+ 
++.sales-panel h1 {
++    margin-bottom: 10px;
 +}
 +
-+* {
-+    box-sizing: border-box;
-+    font-family: Inter, system-ui, -apple-system, sans-serif;
++.sales-tab-row {
++    margin-top: 0;
 +}
 +
-+body {
-+    margin: 0;
-+    background: var(--bg);
-+    color: var(--text);
++.sales-filter-row {
++    grid-template-columns: 2fr 1fr 1fr auto;
++    align-items: stretch;
 +}
 +
-+.store-header {
-+    background: linear-gradient(135deg, #7c3aed, #db2777);
-+    color: #fff;
-+    padding: 32px 8vw;
-+    display: flex;
-+    justify-content: space-between;
-+    align-items: start;
-+    gap: 16px;
++.sales-filter-row .btn-secondary {
++    width: auto;
++    padding-inline: 20px;
 +}
 +
-+.badge {
-+    margin: 0;
-+    font-weight: 600;
-+    opacity: .85;
++.sales-table tbody td {
++    vertical-align: middle;
 +}
 +
-+h1 {
-+    margin: 8px 0;
++.sales-status {
++    text-transform: none;
 +}
 +
-+.subtitle {
-+    margin: 0;
-+    opacity: .95;
++.sales-status--completada {
++    background: rgba(79, 194, 124, 0.2);
++    border-color: rgba(104, 220, 150, 0.45);
++    color: #8ee6b0;
 +}
 +
-+.logout {
-+    color: #fff;
-+    text-decoration: none;
-+    background: rgba(255,255,255,.2);
-+    padding: 10px 14px;
-+    border-radius: 10px;
++.sales-status--pendiente {
++    background: rgba(255, 181, 70, 0.2);
++    border-color: rgba(255, 194, 102, 0.45);
++    color: #ffd089;
 +}
 +
-+.catalog {
-+    padding: 32px 8vw 48px;
-+    display: grid;
-+    gap: 20px;
-+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
++.sales-status--en-revisión,
++.sales-status--en-revision {
++    background: rgba(126, 148, 255, 0.2);
++    border-color: rgba(150, 169, 255, 0.45);
++    color: #b4c5ff;
 +}
 +
-+.card {
-+    background: var(--card);
-+    border-radius: 16px;
-+    padding: 18px;
-+    box-shadow: 0 12px 24px rgba(15, 23, 42, .08);
-+    display: grid;
-+    gap: 10px;
-+}
+ .gallery-grid {
+     margin-top: 16px;
+     min-height: 220px;
+     max-height: 420px;
+     border: 1px solid rgba(126, 151, 223, 0.28);
+     border-radius: 14px;
+     padding: 14px;
+     display: grid;
+     grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+     align-content: start;
+     gap: 12px;
+     overflow-y: auto;
+     overflow-x: hidden;
+     background: rgba(12, 24, 45, 0.38);
+ }
+ 
+ .profile-card {
+     width: 100%;
+     max-width: 170px;
+     text-align: center;
+     background: rgba(20, 34, 60, 0.7);
+     border: 1px solid rgba(130, 157, 242, 0.22);
+     border-radius: 12px;
+     padding: 14px;
+     justify-self: center;
+@@ -293,50 +338,54 @@
+ }
+ 
+ .table-link:hover {
+     text-decoration: underline;
+ }
+ 
+ .role-chip--admin {
+     background: rgba(243, 104, 130, 0.2);
+     border-color: rgba(250, 121, 145, 0.5);
+     color: #ff9fb1;
+ }
+ 
+ @media (max-width: 980px) {
+     .dashboard-layout {
+         grid-template-columns: 1fr;
+     }
+ 
+     .dashboard-sidebar {
+         border-right: 0;
+         border-bottom: 1px solid rgba(130, 156, 255, 0.18);
+     }
+ 
+     .hr-panel--fullscreen {
+         min-height: auto;
+     }
 +
-+.card h2 {
-+    margin: 0;
-+    font-size: 1.1rem;
-+}
-+
-+.card p {
-+    margin: 0;
-+    color: var(--muted);
-+}
-+
-+.card span {
-+    font-size: 1.3rem;
-+    font-weight: 700;
-+    color: var(--primary-dark);
-+}
-+
-+.card button {
-+    border: none;
-+    background: var(--primary);
-+    color: #fff;
-+    border-radius: 10px;
-+    padding: 10px;
-+    font-weight: 600;
-+    cursor: pointer;
-+}
++    .sales-filter-row {
++        grid-template-columns: 1fr;
++    }
+ }
+ 
+ .employee-shell {
+     min-height: 100vh;
+     padding: 18px;
+     display: grid;
+     place-items: center;
+ }
+ 
+ .employee-modal {
+     width: min(100%, 980px);
+     background: rgba(234, 239, 248, 0.95);
+     color: #39424e;
+     border-radius: 14px;
+     border: 1px solid #cfd9e8;
+     box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+     padding: 22px;
+ }
+ 
+ .employee-modal__header {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin-bottom: 12px;
+ }

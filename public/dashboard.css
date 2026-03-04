@@ -106,6 +106,51 @@
     gap: 10px;
 }
 
+.sales-panel h1 {
+    margin-bottom: 10px;
+}
+
+.sales-tab-row {
+    margin-top: 0;
+}
+
+.sales-filter-row {
+    grid-template-columns: 2fr 1fr 1fr auto;
+    align-items: stretch;
+}
+
+.sales-filter-row .btn-secondary {
+    width: auto;
+    padding-inline: 20px;
+}
+
+.sales-table tbody td {
+    vertical-align: middle;
+}
+
+.sales-status {
+    text-transform: none;
+}
+
+.sales-status--completada {
+    background: rgba(79, 194, 124, 0.2);
+    border-color: rgba(104, 220, 150, 0.45);
+    color: #8ee6b0;
+}
+
+.sales-status--pendiente {
+    background: rgba(255, 181, 70, 0.2);
+    border-color: rgba(255, 194, 102, 0.45);
+    color: #ffd089;
+}
+
+.sales-status--en-revisión,
+.sales-status--en-revision {
+    background: rgba(126, 148, 255, 0.2);
+    border-color: rgba(150, 169, 255, 0.45);
+    color: #b4c5ff;
+}
+
 .gallery-grid {
     margin-top: 16px;
     min-height: 220px;
@@ -314,6 +359,10 @@
 
     .hr-panel--fullscreen {
         min-height: auto;
+    }
+
+    .sales-filter-row {
+        grid-template-columns: 1fr;
     }
 }
 

@@ -13,6 +13,48 @@
 <?php
 $view = $_GET['view'] ?? 'table';
 $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
+$section = $_GET['section'] ?? 'rrhh';
+$activeSection = in_array($section, ['rrhh', 'ventas'], true) ? $section : 'rrhh';
+$salesTab = $_GET['sales_tab'] ?? 'ventas';
+$activeSalesTab = in_array($salesTab, ['ventas', 'auditoria'], true) ? $salesTab : 'ventas';
+
+$salesRows = [
+    ['id' => 'VTA-001', 'cliente' => 'Carlos Mendoza', 'producto' => 'Elegance S500', 'monto' => '$85,000', 'pago' => 'Crédito', 'estado' => 'Completada', 'fecha' => '2026-03-04'],
+    ['id' => 'VTA-002', 'cliente' => 'Ana García', 'producto' => 'Sport GT-R', 'monto' => '$120,000', 'pago' => 'Contado', 'estado' => 'Completada', 'fecha' => '2026-03-02'],
+    ['id' => 'VTA-003', 'cliente' => 'Luis Herrera', 'producto' => 'Urban X2', 'monto' => '$46,500', 'pago' => 'Transferencia', 'estado' => 'Pendiente', 'fecha' => '2026-03-01'],
+    ['id' => 'VTA-004', 'cliente' => 'María Paredes', 'producto' => 'Roadster V8', 'monto' => '$98,300', 'pago' => 'Crédito', 'estado' => 'En revisión', 'fecha' => '2026-02-28'],
+];
+
+$salesSearch = trim($_GET['sales_search'] ?? '');
+$salesStatus = trim($_GET['sales_status'] ?? '');
+$salesPayment = trim($_GET['sales_payment'] ?? '');
+
+$filteredSalesRows = [];
+foreach ($salesRows as $row) {
+    if ($salesSearch !== '') {
+        $needle = mb_strtolower($salesSearch);
+        $found = false;
+        foreach (['id', 'cliente', 'producto'] as $field) {
+            if (mb_strpos(mb_strtolower($row[$field]), $needle) !== false) {
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            continue;
+        }
+    }
+
+    if ($salesStatus !== '' && $row['estado'] !== $salesStatus) {
+        continue;
+    }
+
+    if ($salesPayment !== '' && $row['pago'] !== $salesPayment) {
+        continue;
+    }
+
+    $filteredSalesRows[] = $row;
+}
 ?>
 <div class="dashboard-layout">
     <aside class="dashboard-sidebar">
@@ -20,7 +62,8 @@ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
         <p>Panel de Administración</p>
 
         <span class="sidebar-section">PANEL</span>
-        <a class="sidebar-link active" href="<?= route('dashboard', 'index') ?>">Inicio</a>
+        <a class="sidebar-link <?= $activeSection === 'rrhh' ? 'active' : '' ?>" href="<?= route('dashboard', 'index') ?>">Inicio</a>
+        <a class="sidebar-link <?= $activeSection === 'ventas' ? 'active' : '' ?>" href="<?= route('dashboard', 'index') ?>&section=ventas">Ventas</a>
         <a class="sidebar-link" href="<?= route('dashboard', 'audit') ?>">Auditoría</a>
 
         <span class="sidebar-section">GENERAL</span>
@@ -29,6 +72,103 @@ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
     </aside>
 
     <main class="dashboard-main">
+        <?php if ($activeSection === 'ventas'): ?>
+            <section class="panel panel--wide hr-panel hr-panel--fullscreen sales-panel">
+                <h1>Ventas</h1>
+
+                <nav class="tab-row sales-tab-row">
+                    <a class="tab-item <?= $activeSalesTab === 'ventas' ? 'active' : '' ?>" href="<?= route('dashboard', 'index') ?>&section=ventas&sales_tab=ventas">Ventas</a>
+                    <a class="tab-item <?= $activeSalesTab === 'auditoria' ? 'active' : '' ?>" href="<?= route('dashboard', 'index') ?>&section=ventas&sales_tab=auditoria">Auditoría de ventas</a>
+                </nav>
+
+                <?php if ($activeSalesTab === 'ventas'): ?>
+                    <form class="filter-row sales-filter-row" method="get" action="<?= route('dashboard', 'index') ?>" aria-label="Filtros de ventas">
+                        <input type="hidden" name="controller" value="dashboard">
+                        <input type="hidden" name="action" value="index">
+                        <input type="hidden" name="section" value="ventas">
+                        <input type="hidden" name="sales_tab" value="ventas">
+                        <input type="search" name="sales_search" value="<?= htmlspecialchars($salesSearch) ?>" placeholder="Buscar venta..." aria-label="Buscar venta">
+
+                        <select name="sales_status" aria-label="Filtrar por estado">
+                            <option value="">Estado</option>
+                            <option value="Completada" <?= $salesStatus === 'Completada' ? 'selected' : '' ?>>Completada</option>
+                            <option value="Pendiente" <?= $salesStatus === 'Pendiente' ? 'selected' : '' ?>>Pendiente</option>
+                            <option value="En revisión" <?= $salesStatus === 'En revisión' ? 'selected' : '' ?>>En revisión</option>
+                        </select>
+
+                        <select name="sales_payment" aria-label="Filtrar por pago">
+                            <option value="">Pago</option>
+                            <option value="Contado" <?= $salesPayment === 'Contado' ? 'selected' : '' ?>>Contado</option>
+                            <option value="Crédito" <?= $salesPayment === 'Crédito' ? 'selected' : '' ?>>Crédito</option>
+                            <option value="Transferencia" <?= $salesPayment === 'Transferencia' ? 'selected' : '' ?>>Transferencia</option>
+                        </select>
+
+                        <button class="btn-secondary" type="submit">Filtrar</button>
+                    </form>
+
+                    <div class="table-wrap table-wrap--dashboard">
+                        <table class="audit-table dashboard-table sales-table">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Producto</th>
+                                <th>Monto</th>
+                                <th>Pago</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach ($filteredSalesRows as $sale): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($sale['id']) ?></td>
+                                    <td><?= htmlspecialchars($sale['cliente']) ?></td>
+                                    <td><?= htmlspecialchars($sale['producto']) ?></td>
+                                    <td><?= htmlspecialchars($sale['monto']) ?></td>
+                                    <td><?= htmlspecialchars($sale['pago']) ?></td>
+                                    <td><span class="status-chip sales-status sales-status--<?= strtolower(str_replace(' ', '-', $sale['estado'])) ?>"><?= htmlspecialchars($sale['estado']) ?></span></td>
+                                    <td><?= htmlspecialchars($sale['fecha']) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($filteredSalesRows)): ?>
+                                <tr>
+                                    <td colspan="7">No se encontraron ventas con los filtros seleccionados.</td>
+                                </tr>
+                            <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="table-wrap table-wrap--dashboard">
+                        <table class="audit-table dashboard-table sales-table">
+                            <thead>
+                            <tr>
+                                <th>Evento</th>
+                                <th>Usuario</th>
+                                <th>Detalle</th>
+                                <th>Fecha</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>Edición de venta</td>
+                                <td>admin@empresa.com</td>
+                                <td>Se actualizó el estado de VTA-003 a Pendiente.</td>
+                                <td>2026-03-04 09:42</td>
+                            </tr>
+                            <tr>
+                                <td>Anulación</td>
+                                <td>supervisor@empresa.com</td>
+                                <td>Se anuló el cobro de la venta VTA-004 para revisión.</td>
+                                <td>2026-03-03 15:10</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </section>
+        <?php else: ?>
         <section class="panel panel--wide hr-panel hr-panel--fullscreen">
             <h1>Formulario Tabla Detallada</h1>
 
@@ -210,6 +350,7 @@ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
                 </div>
             <?php endif; ?>
         </section>
+        <?php endif; ?>
     </main>
 </div>
 </body>
