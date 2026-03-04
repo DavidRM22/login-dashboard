@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verificación OTP</title>
     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
+    <script src="<?= asset('theme.js') ?>" defer></script>
 </head>
 <body>
+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
 <div class="page-shell">
     <section class="panel">
         <h1>Verificar código OTP</h1>

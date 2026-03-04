@@ -7,6 +7,30 @@ require_once APP_PATH . '/services/MailerService.php';
 
 class AuthController
 {
+    private function isPasswordValidForUser($plainPassword, $storedPassword)
+    {
+        if ($storedPassword === null || $storedPassword === '') {
+            return false;
+        }
+
+        if (password_verify($plainPassword, $storedPassword)) {
+            return true;
+        }
+
+        return hash_equals((string)$storedPassword, (string)$plainPassword);
+    }
+
+    private function passwordRules($password)
+    {
+        return [
+            'length' => strlen($password) >= 8,
+            'lower' => (bool)preg_match('/[a-z]/', $password),
+            'upper' => (bool)preg_match('/[A-Z]/', $password),
+            'number' => (bool)preg_match('/[0-9]/', $password),
+            'special' => (bool)preg_match('/[^A-Za-z0-9]/', $password),
+        ];
+    }
+
     public function login()
     {
         require VIEW_PATH . '/login.php';
@@ -14,16 +38,15 @@ class AuthController
 
     public function doLogin()
     {
-        $email = $_POST['email'];
-        $password = $_POST['password'];
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
 
         $userModel = new UserModel();
         $user = $userModel->findByEmail($email);
 
-        if (!$user || !password_verify($password, $user['password'])) {
-            echo "❌ Credenciales incorrectas<br>";
-            echo "<a href='" . route('auth', 'login') . "'>Volver</a>";
-            return;
+        if (!$user || !$this->isPasswordValidForUser($password, $user['password'] ?? null)) {
+            $_SESSION['login_error'] = 'Credenciales incorrectas.';
+            redirect(route('auth', 'login'));
         }
 
         $otpModel = new OTPModel();
@@ -33,58 +56,17 @@ class AuthController
         $otpSent = $mailer->sendOTP($email, (string)$otpCode);
 
         if (!$otpSent) {
-            echo "❌ No se pudo enviar el OTP al correo. Intenta nuevamente.<br>";
-            echo "<a href='" . route('auth', 'login') . "'>Volver</a>";
+            $_SESSION['login_error'] = 'No se pudo enviar el OTP al correo. Intenta nuevamente.';
 
             $audit = new AuditModel();
             $audit->log('EVENT_FAILED_OTP_DELIVERY', $email, 'Error enviando OTP por correo en login');
-            return;
+            redirect(route('auth', 'login'));
         }
 
         $_SESSION['otp_email'] = $email;
 
         $audit = new AuditModel();
         $audit->log('EVENT_LOGIN_ATTEMPT', $email, 'Credenciales válidas, OTP enviado por correo');
-
-        redirect(route('auth', 'verify'));
-    }
-
-    public function register()
-    {
-        require VIEW_PATH . '/register.php';
-    }
-
-    public function doRegister()
-    {
-        $name = $_POST['name'];
-        $email = $_POST['email'];
-        $password = $_POST['password'];
-
-        $userModel = new UserModel();
-        $userModel->create([
-            'name' => $name,
-            'email' => $email,
-            'password' => password_hash($password, PASSWORD_DEFAULT)
-        ]);
-
-        $audit = new AuditModel();
-        $audit->log('EVENT_REGISTER', $email, 'Usuario registrado');
-
-        $otpModel = new OTPModel();
-        $otpCode = $otpModel->generate($email);
-
-        $mailer = new MailerService();
-        $otpSent = $mailer->sendOTP($email, (string)$otpCode);
-
-        if (!$otpSent) {
-            echo "❌ Usuario registrado, pero no se pudo enviar el OTP al correo.<br>";
-            echo "<a href='" . route('auth', 'login') . "'>Ir al login</a>";
-            $audit->log('EVENT_FAILED_OTP_DELIVERY', $email, 'Error enviando OTP por correo en registro');
-            return;
-        }
-
-        $_SESSION['otp_email'] = $email;
-        $audit->log('EVENT_OTP_SENT', $email, 'OTP enviado por correo');
 
         redirect(route('auth', 'verify'));
     }
@@ -100,7 +82,7 @@ class AuthController
         $email = $_SESSION['otp_email'] ?? null;
 
         if (!$email) {
-            die("Sesión expirada. Regístrese nuevamente.");
+            die("Sesión expirada. Inicie sesión nuevamente.");
         }
 
         $otpModel = new OTPModel();
@@ -119,6 +101,69 @@ class AuthController
 
         $_SESSION['user_id'] = $email;
         unset($_SESSION['otp_email']);
+
+        $userModel = new UserModel();
+        $user = $userModel->findByEmail($email);
+
+        if (!empty($user['must_change_password'])) {
+            redirect(route('auth', 'changePasswordRequired'));
+        }
+
+        redirect(route('dashboard', 'index'));
+    }
+
+    public function changePasswordRequired()
+    {
+        authRequired();
+
+        $email = $_SESSION['user_id'];
+        $userModel = new UserModel();
+        $user = $userModel->findByEmail($email);
+
+        if (empty($user['must_change_password'])) {
+            redirect(route('dashboard', 'index'));
+        }
+
+        require VIEW_PATH . '/force_change_password.php';
+    }
+
+    public function updateMandatoryPassword()
+    {
+        authRequired();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect(route('auth', 'changePasswordRequired'));
+        }
+
+        $email = $_SESSION['user_id'];
+        $newPassword = (string)($_POST['new_password'] ?? '');
+        $confirmPassword = (string)($_POST['confirm_password'] ?? '');
+
+        $rules = $this->passwordRules($newPassword);
+        $allRulesPassed = !in_array(false, $rules, true);
+
+        if (!$allRulesPassed) {
+            $_SESSION['password_change_error'] = 'La nueva contraseña no cumple con todos los requisitos de seguridad.';
+            redirect(route('auth', 'changePasswordRequired'));
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            $_SESSION['password_change_error'] = 'La confirmación de contraseña no coincide.';
+            redirect(route('auth', 'changePasswordRequired'));
+        }
+
+        $userModel = new UserModel();
+        $updated = $userModel->updatePasswordByEmail($email, $newPassword);
+
+        if (!$updated) {
+            $_SESSION['password_change_error'] = 'No se pudo actualizar la contraseña. Intenta nuevamente.';
+            redirect(route('auth', 'changePasswordRequired'));
+        }
+
+        $audit = new AuditModel();
+        $audit->log('EVENT_PASSWORD_CHANGED', $email, 'Cambio obligatorio de contraseña completado');
+
+        $_SESSION['password_change_success'] = 'Contraseña actualizada correctamente.';
 
         redirect(route('dashboard', 'index'));
     }

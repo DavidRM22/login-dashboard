@@ -6,8 +6,10 @@
     <title>Dashboard RRHH</title>
     <link rel="stylesheet" href="<?= asset('estilos.css') ?>">
     <link rel="stylesheet" href="<?= asset('dashboard.css') ?>">
+    <script src="<?= asset('theme.js') ?>" defer></script>
 </head>
 <body class="dashboard-body">
+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
 <?php
 $view = $_GET['view'] ?? 'table';
 $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
@@ -37,8 +39,8 @@ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
 
             <nav class="tab-row">
                 <a class="tab-item active" href="<?= route('dashboard', 'index') ?>">Recursos Humanos</a>
-                <a class="tab-item" href="<?= route('dashboard', 'audit') ?>">Soporte</a>
-                <a class="tab-item" href="<?= route('dashboard', 'audit') ?>">Comunidad</a>
+                <a class="tab-item" href="#">Soporte</a>
+                <a class="tab-item" href="#">Comunidad</a>
             </nav>
 
             <div class="subtab-row">
@@ -59,31 +61,48 @@ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
                     <a class="btn-primary btn-inline" href="<?= route('dashboard', 'addEmployee') ?>">Agregar Empleado</a>
                 </div>
             </div>
+            <?php
+            // calcular estadísticas por tipo de empleado
+            $rowsForStats = $allUsers ?? (isset($user) ? [$user] : []);
+            $totalPersonal = count($rowsForStats);
+            $counts = [];
+            foreach ($rowsForStats as $r) {
+                $t = trim($r['type'] ?? '');
+                if ($t === '') $t = 'Otro';
+                if (!isset($counts[$t])) $counts[$t] = 0;
+                $counts[$t]++;
+            }
+
+            $instructores = $counts['Instructor'] ?? 0;
+            $desarrolladores = $counts['Desarrollador'] ?? 0;
+            $administradores = $counts['Administrador'] ?? 0;
+            $asistAdministrativos = $counts['Asistente Administrativo'] ?? 0;
+            ?>
 
             <div class="stats-grid">
                 <article class="stat-card">
                     <h4>Total Personal</h4>
-                    <p class="stat-value">3</p>
+                    <p class="stat-value"><?= $totalPersonal ?></p>
                     <small>Empleados registrados</small>
                 </article>
                 <article class="stat-card">
                     <h4>Instructores</h4>
-                    <p class="stat-value">2</p>
+                    <p class="stat-value"><?= $instructores ?></p>
                     <small>Equipo docente</small>
                 </article>
                 <article class="stat-card">
                     <h4>Desarrolladores</h4>
-                    <p class="stat-value">0</p>
+                    <p class="stat-value"><?= $desarrolladores ?></p>
                     <small>Equipo técnico</small>
                 </article>
                 <article class="stat-card">
                     <h4>Administradores</h4>
-                    <p class="stat-value">1</p>
+                    <p class="stat-value"><?= $administradores ?></p>
                     <small>Personal administrativo</small>
                 </article>
                 <article class="stat-card">
                     <h4>Asist. Administrativos</h4>
-                    <p class="stat-value">0</p>
+                    <p class="stat-value"><?= $asistAdministrativos ?></p>
                     <small>Personal de soporte</small>
                 </article>
             </div>
@@ -93,28 +112,61 @@ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
                 <a class="subtab-item <?= $activeView === 'table' ? 'active' : '' ?>" href="<?= route('dashboard', 'index') ?>&view=table">Tabla Detallada</a>
             </div>
 
-            <div class="filter-row">
-                <input type="search" placeholder="Buscar por nombre, email o puesto..." aria-label="Buscar personal">
-                <select aria-label="Filtrar por tipo">
-                    <option>Todos los tipos</option>
-                    <option>Instructor</option>
-                    <option>Admin</option>
+            <form class="filter-row" method="get" action="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>" aria-label="Filtros de búsqueda">
+                <input type="hidden" name="controller" value="dashboard">
+                <input type="hidden" name="action" value="index">
+                <input
+                    type="search"
+                    name="search"
+                    value="<?= htmlspecialchars($_GET['search'] ?? '') ?>"
+                    placeholder="Buscar por nombre, email o puesto..."
+                    aria-label="Buscar personal">
+
+                <select name="type" aria-label="Filtrar por tipo" onchange="this.form.submit()">
+                    <option value="" <?= (isset($_GET['type']) && $_GET['type'] === '') || !isset($_GET['type']) ? 'selected' : '' ?>>Todos los tipos</option>
+                    <option value="Instructor" <?= (isset($_GET['type']) && $_GET['type'] === 'Instructor') ? 'selected' : '' ?>>Instructor</option>
+                    <option value="Desarrollador" <?= (isset($_GET['type']) && $_GET['type'] === 'Desarrollador') ? 'selected' : '' ?>>Desarrollador</option>
+                    <option value="Administrador" <?= (isset($_GET['type']) && $_GET['type'] === 'Administrador') ? 'selected' : '' ?>>Administrador</option>
+                    <option value="Asistente Administrativo" <?= (isset($_GET['type']) && $_GET['type'] === 'Asistente Administrativo') ? 'selected' : '' ?>>Asistente Administrativo</option>
                 </select>
-                <select aria-label="Filtrar por estado">
-                    <option>Todos los estados</option>
-                    <option>Activo</option>
+
+                <select name="status" aria-label="Filtrar por estado" onchange="this.form.submit()">
+                    <option value="" <?= (isset($_GET['status']) && $_GET['status'] === '') || !isset($_GET['status']) ? 'selected' : '' ?>>Todos los estados</option>
+                    <option value="Activo" <?= (isset($_GET['status']) && $_GET['status'] === 'Activo') ? 'selected' : '' ?>>Activo</option>
+                    <option value="Inactivo" <?= (isset($_GET['status']) && $_GET['status'] === 'Inactivo') ? 'selected' : '' ?>>Inactivo</option>
                 </select>
-            </div>
+
+                <button class="btn-secondary" type="submit">Aplicar</button>
+            </form>
 
             <?php if ($activeView === 'gallery'): ?>
                 <div class="gallery-grid">
-                    <article class="profile-card">
-                        <div class="avatar"><?= strtoupper(substr($user['name'], 0, 1)) ?></div>
-                        <h4><?= $user['name'] ?></h4>
-                        <span class="role-chip">Instructor</span>
-                        <p><?= $user['email'] ?></p>
-                        <small>Registrado: <?= $user['created_at'] ?></small>
-                    </article>
+                    <?php
+                    $galleryRows = $allUsers ?? [];
+                    if (empty($galleryRows)) {
+                        $galleryRows = isset($user) ? [$user] : [];
+                    }
+                    ?>
+                    <?php foreach ($galleryRows as $u): ?>
+                        <?php
+                        $name = trim($u['name'] ?? '');
+                        $initial = strtoupper(substr($name !== '' ? $name : 'N', 0, 1));
+                        $photoUrl = trim($u['photo_url'] ?? '');
+                        ?>
+                        <article class="profile-card">
+                            <?php if ($photoUrl !== ''): ?>
+                                <div class="avatar avatar--image">
+                                    <img src="<?= asset($photoUrl) ?>" alt="Foto de <?= htmlspecialchars($name) ?>">
+                                </div>
+                            <?php else: ?>
+                                <div class="avatar"><?= htmlspecialchars($initial) ?></div>
+                            <?php endif; ?>
+                            <h4><?= htmlspecialchars($name) ?></h4>
+                            <span class="role-chip"><?= htmlspecialchars($u['type'] ?? 'Sin tipo') ?></span>
+                            <p><?= htmlspecialchars($u['email'] ?? '') ?></p>
+                            <small>Registrado: <?= htmlspecialchars($u['created_at'] ?? '-') ?></small>
+                        </article>
+                    <?php endforeach; ?>
                 </div>
             <?php else: ?>
                 <div class="table-wrap table-wrap--dashboard">
@@ -131,42 +183,28 @@ $activeView = in_array($view, ['table', 'gallery'], true) ? $view : 'table';
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td><?= $user['name'] ?></td>
-                            <td><?= $user['email'] ?></td>
-                            <td><span class="role-chip">Instructor</span></td>
-                            <td>Coordinador de Contenidos</td>
-                            <td>Recursos Humanos</td>
-                            <td><span class="status-chip">active</span></td>
-                            <td>
-                                <a class="table-link" href="<?= route('dashboard', 'audit') ?>">Ver</a>
-                                <a class="table-link" href="<?= route('dashboard', 'addEmployee') ?>">Editar</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>techskillsperu</td>
-                            <td>techskillsperu@gmail.com</td>
-                            <td><span class="role-chip">Instructor</span></td>
-                            <td>N/A</td>
-                            <td>Recursos Humanos</td>
-                            <td><span class="status-chip">active</span></td>
-                            <td>
-                                <a class="table-link" href="<?= route('dashboard', 'audit') ?>">Ver</a>
-                                <a class="table-link" href="<?= route('dashboard', 'addEmployee') ?>">Editar</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Carlos Zambrano C.</td>
-                            <td>informes@techskillsperu.com</td>
-                            <td><span class="role-chip role-chip--admin">admin</span></td>
-                            <td>Senior</td>
-                            <td>Administración</td>
-                            <td><span class="status-chip">active</span></td>
-                            <td>
-                                <a class="table-link" href="<?= route('dashboard', 'audit') ?>">Ver</a>
-                                <a class="table-link" href="<?= route('dashboard', 'addEmployee') ?>">Editar</a>
-                            </td>
-                        </tr>
+                        <?php
+                        $rows = $allUsers ?? [];
+                        if (empty($rows)) :
+                            // fallback a mostrar usuario actual
+                            $rows = isset($user) ? [$user] : [];
+                        endif;
+
+                        foreach ($rows as $u) :
+                            ?>
+                            <tr>
+                                <td><?= htmlspecialchars($u['name'] ?? '') ?></td>
+                                <td><?= htmlspecialchars($u['email'] ?? '') ?></td>
+                                <td><span class="role-chip"><?= htmlspecialchars($u['type'] ?? '') ?></span></td>
+                                <td><?= htmlspecialchars($u['position'] ?? '') ?></td>
+                                <td><?= htmlspecialchars($u['department'] ?? '') ?></td>
+                                <td><span class="status-chip"><?= htmlspecialchars($u['status'] ?? '') ?></span></td>
+                                <td>
+                                    <a class="table-link" href="<?= route('dashboard', 'viewEmployee') ?>&id=<?= urlencode($u['id'] ?? '') ?>">Ver</a>
+                                    <a class="table-link" href="<?= route('dashboard', 'editEmployee') ?>&id=<?= urlencode($u['id'] ?? '') ?>">Editar</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
