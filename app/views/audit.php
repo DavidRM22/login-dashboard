@@ -17,6 +17,7 @@
 
         <span class="sidebar-section">PANEL</span>
         <a class="sidebar-link" href="<?= route('dashboard', 'index') ?>">Inicio</a>
+        <a class="sidebar-link" href="<?= route('dashboard', 'index') ?>&section=ventas">Ventas</a>
         <a class="sidebar-link active" href="<?= route('dashboard', 'audit') ?>">Auditoría</a>
 
         <span class="sidebar-section">GENERAL</span>

@@ -19,10 +19,7 @@ $salesTab = $_GET['sales_tab'] ?? 'ventas';
 $activeSalesTab = in_array($salesTab, ['ventas', 'auditoria'], true) ? $salesTab : 'ventas';
 
 $salesRows = [
-    ['id' => 'VTA-001', 'cliente' => 'Carlos Mendoza', 'producto' => 'Elegance S500', 'monto' => '$85,000', 'pago' => 'Crédito', 'estado' => 'Completada', 'fecha' => '2026-03-04'],
-    ['id' => 'VTA-002', 'cliente' => 'Ana García', 'producto' => 'Sport GT-R', 'monto' => '$120,000', 'pago' => 'Contado', 'estado' => 'Completada', 'fecha' => '2026-03-02'],
-    ['id' => 'VTA-003', 'cliente' => 'Luis Herrera', 'producto' => 'Urban X2', 'monto' => '$46,500', 'pago' => 'Transferencia', 'estado' => 'Pendiente', 'fecha' => '2026-03-01'],
-    ['id' => 'VTA-004', 'cliente' => 'María Paredes', 'producto' => 'Roadster V8', 'monto' => '$98,300', 'pago' => 'Crédito', 'estado' => 'En revisión', 'fecha' => '2026-02-28'],
+    ['id' => 'VTA-001', 'cliente' => 'Carlos Mendoza', 'producto' => 'Audifono Honor X6B', 'monto' => 'S/ 85,00', 'pago' => 'Crédito', 'estado' => 'Completada', 'fecha' => '2026-03-04'],
 ];
 
 $salesSearch = trim($_GET['sales_search'] ?? '');
