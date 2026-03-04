@@ -1,0 +1,95 @@
+:root {
+    color-scheme: light;
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --primary: #6b46ff;
+    --primary-dark: #5032c9;
+    --text: #111827;
+    --muted: #4b5563;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.store-header {
+    background: linear-gradient(135deg, #7c3aed, #db2777);
+    color: #fff;
+    padding: 32px 8vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 16px;
+}
+
+.badge {
+    margin: 0;
+    font-weight: 600;
+    opacity: .85;
+}
+
+h1 {
+    margin: 8px 0;
+}
+
+.subtitle {
+    margin: 0;
+    opacity: .95;
+}
+
+.logout {
+    color: #fff;
+    text-decoration: none;
+    background: rgba(255,255,255,.2);
+    padding: 10px 14px;
+    border-radius: 10px;
+}
+
+.catalog {
+    padding: 32px 8vw 48px;
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, .08);
+    display: grid;
+    gap: 10px;
+}
+
+.card h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.card p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.card span {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+.card button {
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}

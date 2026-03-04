@@ -20,6 +20,13 @@ class AuthController
         return hash_equals((string)$storedPassword, (string)$plainPassword);
     }
 
+
+    private function isClientGmailAccount($email)
+    {
+        $email = trim((string)$email);
+        return preg_match('/@gmail\.com$/i', $email) === 1;
+    }
+
     private function passwordRules($password)
     {
         return [
@@ -107,6 +114,10 @@ class AuthController
 
         if (!empty($user['must_change_password'])) {
             redirect(route('auth', 'changePasswordRequired'));
+        }
+
+        if ($this->isClientGmailAccount($email)) {
+            redirect(route('product', 'index'));
         }
 
         redirect(route('dashboard', 'index'));
